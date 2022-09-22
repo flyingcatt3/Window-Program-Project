@@ -6,3 +6,8 @@
 
 
 這裡會放壓縮好的執行檔 https://drive.google.com/drive/folders/1c1tukBLUfSPCgkJ04CfBx2PZmZj7LQpz?usp=sharing
+
+Special Thanks:
+
+
+https://github.com/blakepell/BasicAudio
