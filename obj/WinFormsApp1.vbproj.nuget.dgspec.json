@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jones\\Desktop\\vbnet\\Project\\WinFormsApp1\\WinFormsApp1.vbproj": {}
+    "C:\\Users\\jones\\Desktop\\Window-Program-Project\\WinFormsApp1.vbproj": {}
   },
   "projects": {
-    "C:\\Users\\jones\\Desktop\\vbnet\\Project\\WinFormsApp1\\WinFormsApp1.vbproj": {
+    "C:\\Users\\jones\\Desktop\\Window-Program-Project\\WinFormsApp1.vbproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jones\\Desktop\\vbnet\\Project\\WinFormsApp1\\WinFormsApp1.vbproj",
+        "projectUniqueName": "C:\\Users\\jones\\Desktop\\Window-Program-Project\\WinFormsApp1.vbproj",
         "projectName": "WinFormsApp1",
-        "projectPath": "C:\\Users\\jones\\Desktop\\vbnet\\Project\\WinFormsApp1\\WinFormsApp1.vbproj",
+        "projectPath": "C:\\Users\\jones\\Desktop\\Window-Program-Project\\WinFormsApp1.vbproj",
         "packagesPath": "C:\\Users\\jones\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jones\\Desktop\\vbnet\\Project\\WinFormsApp1\\obj\\",
+        "outputPath": "C:\\Users\\jones\\Desktop\\Window-Program-Project\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\jones\\AppData\\Roaming\\NuGet\\NuGet.Config",

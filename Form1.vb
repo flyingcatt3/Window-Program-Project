@@ -1,7 +1,4 @@
-﻿
-
-
-Imports WinFormsApp1.Argus.Audio
+﻿Imports WinFormsApp1.Argus.Audio
 
 Public Class Form1
     Dim Path = Application.StartupPath
