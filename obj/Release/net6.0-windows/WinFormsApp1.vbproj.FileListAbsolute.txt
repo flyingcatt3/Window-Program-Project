@@ -32,3 +32,4 @@ C:\Users\jones\Desktop\Window-Program-Project\obj\Release\net6.0-windows\refint\
 C:\Users\jones\Desktop\Window-Program-Project\obj\Release\net6.0-windows\WinFormsApp1.pdb
 C:\Users\jones\Desktop\Window-Program-Project\obj\Release\net6.0-windows\WinFormsApp1.genruntimeconfig.cache
 C:\Users\jones\Desktop\Window-Program-Project\obj\Release\net6.0-windows\ref\WinFormsApp1.dll
+C:\Users\jones\Desktop\Window-Program-Project\obj\Release\net6.0-windows\WinFormsApp1.Resources.resources
