@@ -5,6 +5,7 @@
     ReadOnly StoryListBG = Path + "StoryListBG.jpg"
     ReadOnly Clicksound = Path + "click.mp3"
     Dim StoryListTitle As New Label()
+    Dim tmpWindowSize, resizing
 
     Public Sub timeDelay(ByVal secondsDelayedBy As Double)
         Dim stopwatch As New Stopwatch
@@ -22,9 +23,23 @@
     (ByVal lpstrCommand As String, ByVal lpstrReturnString As String,
     ByVal uReturnLength As Integer, ByVal hwndCallback As Integer) As Integer
 
+    Private Sub fullscreen(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
+
+        If Me.WindowState = FormWindowState.Normal And e.KeyCode = Keys.F11 Then
+            FormBorderStyle = FormBorderStyle.None
+            Me.WindowState = FormWindowState.Maximized
+        ElseIf e.KeyCode = Keys.Escape Or e.keycode = Keys.F11 Then
+            FormBorderStyle = FormBorderStyle.Sizable
+            Me.WindowState = FormWindowState.Normal
+            'Me.Size = New Size(1600, 900)
+            Me.Size = tmpWindowSize
+        End If
+
+    End Sub
+
     Sub setstartclr(r, g, b)
         Start.ForeColor = Color.FromArgb(r, g, b)
-        timeDelay(0.01)
+        timeDelay(0.0167) '60 fps
         'ver.Text = r.ToString + "," + g.ToString + "," + b.ToString
     End Sub
 
@@ -44,39 +59,43 @@
 
                 For x = 0 To 4
                     StoryListTitle.Text &= txt(x)
-                    timeDelay(0.1)
                 Next
+
                 Do While StoryListTitle.Visible
-                    If Me.WindowState <> FormWindowState.Minimized Then
+                    'can use timeDelay()
+                    If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
                         StoryListTitle.Text = StoryListTitle.Text.Remove(4)
-                        timeDelay(0.2)
                         StoryListTitle.Text &= txt(4)
-                        timeDelay(0.2)
-                    Else
+                    ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
+                        'Else timeDelay(0.25)
                     End If
                 Loop
 
             End Sub)
     End Sub
 
-    Sub hideStart()
+    Function hideStart()
         If Me.WindowState = FormWindowState.Minimized Then
             Start.Hide()
+            Return 1
+        ElseIf Not StartLayout.Visible Then
+            Return 1
+        Else Return 0
         End If
-    End Sub
+    End Function
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        Me.SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
-        Me.SetStyle(ControlStyles.AllPaintingInWmPaint, True)
-        Me.SetStyle(ControlStyles.UserPaint, True)
+        'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
         DoubleBuffered = True
+
+        Me.KeyPreview = True
 
         '初始化所需控制項的格式
         StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-        ver.Text = "20220925"
+        ver.Text = "20220928"
         ver.BackColor = Color.FromArgb(100, 0, 0, 0)
 
         StoryListTitle.Hide()
@@ -108,42 +127,54 @@
 
         Await Task.Run(
             Sub()
-                Do While StartLayout.Visible And Start.Visible
+                Do While 1
 
                     For x = g To r Mod 255
                         g += 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                     For x = b Mod 255 + 1 To r
                         r -= 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                     For x = b To g Mod 255
                         b += 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                     For x = r Mod 255 + 1 To g
                         g -= 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                     For x = g To b Mod 255
                         r += 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                     For x = g Mod 255 + 1 To b
                         b -= 1
                         setstartclr(r, g, b)
-                        hideStart()
+                        If hideStart() Then
+                            Exit Do
+                        End If
                     Next
 
                 Loop
@@ -196,6 +227,7 @@
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
         End If
 
+        '視窗從最小化後恢復
         If Me.WindowState <> FormWindowState.Minimized And Not StoryListTitle.Visible And Not StartLayout.Visible Then
             StoryListTitle.Location = Me.Size / 20
             StoryListTitle.Width = Me.Size.Width * 0.9
@@ -205,15 +237,27 @@
             setStoryListTitle()
         End If
 
-        If Me.WindowState <> FormWindowState.Minimized And Not Start.Visible Then
+        If Me.WindowState <> FormWindowState.Minimized And Not Start.Visible And Not StoryListTitle.Visible Then
             Start.Show()
             StartColorCycle()
         End If
+
+        If Me.WindowState = FormWindowState.Normal Then
+            tmpWindowSize = Me.Size
+        End If
+
     End Sub
 
-    Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
-
+    Private Sub suspend_setStoryListTitle() Handles Me.ResizeBegin
+        resizing = True
     End Sub
+    Private Sub resume_setStoryListTitle() Handles Me.ResizeEnd
+        resizing = False
+    End Sub
+
+    'Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
+
+    'End Sub
 
     'Private Sub NextSentence(sender As Object, e As EventArgs) Handles MyBase.Click
 
