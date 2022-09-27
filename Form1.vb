@@ -76,7 +76,7 @@
         '初始化所需控制項的格式
         StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-        ver.Text = "20220924"
+        ver.Text = "20220925"
         ver.BackColor = Color.FromArgb(100, 0, 0, 0)
 
         StoryListTitle.Hide()
