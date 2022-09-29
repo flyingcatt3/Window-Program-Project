@@ -28,7 +28,7 @@
         If Me.WindowState = FormWindowState.Normal And e.KeyCode = Keys.F11 Then
             FormBorderStyle = FormBorderStyle.None
             Me.WindowState = FormWindowState.Maximized
-        ElseIf e.KeyCode = Keys.Escape Or e.keycode = Keys.F11 Then
+        ElseIf e.KeyCode = Keys.Escape Or e.KeyCode = Keys.F11 Then
             FormBorderStyle = FormBorderStyle.Sizable
             Me.WindowState = FormWindowState.Normal
             'Me.Size = New Size(1600, 900)
@@ -95,7 +95,7 @@
         '初始化所需控制項的格式
         StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-        ver.Text = "20220928"
+        ver.Text = "20220929"
         ver.BackColor = Color.FromArgb(100, 0, 0, 0)
 
         StoryListTitle.Hide()
@@ -110,12 +110,13 @@
 
     Private Sub buttonClickHandler() Handles MyBase.Load
         For Each ctrl In Me.StartLayout.Controls
-            If (TypeOf ctrl Is Button) Then _
-           AddHandler DirectCast(ctrl, Button).Click, AddressOf ButtonClick
+            If (TypeOf ctrl Is Button) Then
+                AddHandler DirectCast(ctrl, Button).Click, AddressOf ButtonClick
+                AddHandler DirectCast(ctrl, Button).GotFocus, AddressOf ButtonCursor
+            End If
         Next
-
+        '不是只有開始遊戲的畫面有按鈕而已 後續選擇故事的地方也要再另外寫
         'AddHandler StoryList.Click, AddressOf ButtonClick
-
     End Sub
 
     'https://stackoverflow.com/questions/48710165/back-colour-of-button-not-changing-when-updated-in-for-loop
@@ -191,6 +192,10 @@
         'MsgBox("hello")
 
     End Sub
+
+    Sub ButtonCursor(sender As Button, e As EventArgs)
+        sender.Cursor = Cursors.Hand
+    End Sub
     Private Sub ChooseStory() Handles Start.Click
 
         StartLayout.Hide()
@@ -248,10 +253,15 @@
 
     End Sub
 
-    Private Sub suspend_setStoryListTitle() Handles Me.ResizeBegin
+    Private Sub suspendScreen() Handles Me.ResizeBegin
         resizing = True
     End Sub
-    Private Sub resume_setStoryListTitle() Handles Me.ResizeEnd
+
+    Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
+
+    End Sub
+
+    Private Sub resumeScreen() Handles Me.ResizeEnd
         resizing = False
     End Sub
 
