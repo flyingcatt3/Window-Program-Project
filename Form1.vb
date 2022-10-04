@@ -1,4 +1,6 @@
-﻿Public Class Form1
+﻿Imports System.Drawing.Text
+
+Public Class Form1
 
     Dim Path = Application.StartupPath
     ReadOnly startBGM = Path + "start.mp3"
@@ -6,6 +8,7 @@
     ReadOnly Clicksound = Path + "click.mp3"
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
+    Dim pfc As New PrivateFontCollection()
 
     Public Sub timeDelay(ByVal secondsDelayedBy As Double)
         Dim stopwatch As New Stopwatch
@@ -95,8 +98,10 @@
         '初始化所需控制項的格式
         StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-        ver.Text = "20220929"
+        ver.Text = "20221005"
         ver.BackColor = Color.FromArgb(100, 0, 0, 0)
+
+        pfc.AddFontFile(Path + "TaipeiSansTCBeta-Regular.ttf")
 
         StoryListTitle.Hide()
         Me.Controls.Add(StoryListTitle)
@@ -205,7 +210,7 @@
 
         StoryListTitle.Location = Me.Size / 20
         StoryListTitle.Anchor = Drawing.ContentAlignment.TopLeft
-        StoryListTitle.Font = New Font("Taipei Sans TC Beta", 36, FontStyle.Bold)
+        StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
         StoryListTitle.ForeColor = Color.White
         StoryListTitle.BackColor = Color.FromArgb(120, 0, 0, 0)
         StoryListTitle.Width = Me.Size.Width * 0.9
@@ -255,10 +260,6 @@
 
     Private Sub suspendScreen() Handles Me.ResizeBegin
         resizing = True
-    End Sub
-
-    Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
-
     End Sub
 
     Private Sub resumeScreen() Handles Me.ResizeEnd
