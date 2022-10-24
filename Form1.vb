@@ -1,11 +1,16 @@
-﻿Imports System.Drawing.Text
+﻿Imports SixLabors.ImageSharp
+Imports System.Drawing.Text
+Imports System.IO
 
 Public Class Form1
 
-    Dim Path = Application.StartupPath
-    ReadOnly startBGM = Path + "start.mp3"
-    ReadOnly StoryListBG = Path + "StoryListBG.jpg"
-    ReadOnly Clicksound = Path + "click.mp3"
+    ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
+    ReadOnly gamePath = Application.StartupPath
+    ReadOnly storyPath = gamePath + "\story\"
+    ReadOnly converted_imgPath = gamePath + "\converted_imgs\"
+    ReadOnly startBGM = gamePath + "start.mp3"
+    ReadOnly StoryListBG = gamePath + "StoryListBG.jpg"
+    ReadOnly Clicksound = gamePath + "click.mp3"
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
@@ -26,6 +31,10 @@ Public Class Form1
     (ByVal lpstrCommand As String, ByVal lpstrReturnString As String,
     ByVal uReturnLength As Integer, ByVal hwndCallback As Integer) As Integer
 
+    Public Sub imgConverter(img As String)
+        ImageExtensions.SaveAsJpeg(Image.Load(img), converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg")
+    End Sub
+
     Private Sub fullscreen(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
 
         If Me.WindowState = FormWindowState.Normal And e.KeyCode = Keys.F11 Then
@@ -34,14 +43,13 @@ Public Class Form1
         ElseIf e.KeyCode = Keys.Escape Or e.KeyCode = Keys.F11 Then
             FormBorderStyle = FormBorderStyle.Sizable
             Me.WindowState = FormWindowState.Normal
-            'Me.Size = New Size(1600, 900)
             Me.Size = tmpWindowSize
         End If
 
     End Sub
 
     Sub setstartclr(r, g, b)
-        Start.ForeColor = Color.FromArgb(r, g, b)
+        Start.ForeColor = Drawing.Color.FromArgb(r, g, b)
         timeDelay(0.0167) '60 fps
         'ver.Text = r.ToString + "," + g.ToString + "," + b.ToString
     End Sub
@@ -91,20 +99,25 @@ Public Class Form1
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
-        DoubleBuffered = True
+        'DoubleBuffered = True
 
-        Me.KeyPreview = True
+        Me.Width = Screen.PrimaryScreen.Bounds.Width * 0.91
+        Me.Height = Screen.PrimaryScreen.Bounds.Width * 0.39
+        tmpWindowSize = Me.Size
 
         '初始化所需控制項的格式
-        StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
+        StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-        ver.Text = "20221005"
-        ver.BackColor = Color.FromArgb(100, 0, 0, 0)
+        ver.Text = "20221025"
 
-        pfc.AddFontFile(Path + "TaipeiSansTCBeta-Regular.ttf")
+        ver.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
+
+        pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
 
         StoryListTitle.Hide()
         Me.Controls.Add(StoryListTitle)
+
+        Me.CenterToScreen()
 
         mciSendString("open """ & startBGM & """ alias startBGM", Nothing, 0, IntPtr.Zero)
         mciSendString("open """ & Clicksound & """ alias ClickSound", Nothing, 0, IntPtr.Zero)
@@ -205,14 +218,19 @@ Public Class Form1
 
         StartLayout.Hide()
 
-        Me.BackgroundImage = Image.FromFile(StoryListBG)
+        'If Not supportedImgFormat.Contains(Path.GetExtension(StoryListBG)) Then
+        'imgConverter(StoryListBG)
+        'End If
+        'img = Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
+
+        Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Stretch
 
         StoryListTitle.Location = Me.Size / 20
         StoryListTitle.Anchor = Drawing.ContentAlignment.TopLeft
         StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
-        StoryListTitle.ForeColor = Color.White
-        StoryListTitle.BackColor = Color.FromArgb(120, 0, 0, 0)
+        StoryListTitle.ForeColor = Drawing.Color.White
+        StoryListTitle.BackColor = Drawing.Color.FromArgb(120, 0, 0, 0)
         StoryListTitle.Width = Me.Size.Width * 0.9
         StoryListTitle.Height = Me.Size.Height * 0.9
         StoryListTitle.Text = ""
@@ -233,7 +251,7 @@ Public Class Form1
         End If
 
         If StartLayout.Visible Then
-            StartLayout.Location = New Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
+            StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
         End If
 
