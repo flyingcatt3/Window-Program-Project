@@ -115,10 +115,7 @@ Public Class Form1
 
         pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
 
-        GameTitle.ResetText()
-        Start.ResetText()
-        GameTitle.Text = "(選擇遊戲)"
-        Start.Text = "開始遊戲"
+        StartLayout.Show()
 
         StoryListTitle.Hide()
         Me.Controls.Add(StoryListTitle)

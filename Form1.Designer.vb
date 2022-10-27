@@ -92,6 +92,7 @@ Partial Class Form1
         Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.StartLayout.Size = New System.Drawing.Size(691, 464)
         Me.StartLayout.TabIndex = 3
+        Me.StartLayout.Visible = False
         '
         'Form1
         '
@@ -106,6 +107,7 @@ Partial Class Form1
         Me.ForeColor = System.Drawing.SystemColors.ControlText
         Me.KeyPreview = True
         Me.Margin = New System.Windows.Forms.Padding(2)
+        Me.MinimumSize = New System.Drawing.Size(1280, 720)
         Me.Name = "Form1"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
