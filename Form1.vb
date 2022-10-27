@@ -65,6 +65,7 @@ Public Class Form1
 
     Async Sub setStoryListTitle()
         Dim txt = "選擇故事_"
+
         Await Task.Run(
             Sub()
 
@@ -108,7 +109,11 @@ Public Class Form1
         '初始化所需控制項的格式
         StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
+<<<<<<< HEAD
+        ver.Text = "20221027"
+=======
         ver.Text = "20221025"
+>>>>>>> 655fbbde726ac32c16e61d1a6bdbd17011de602f
 
         ver.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
 
@@ -119,6 +124,11 @@ Public Class Form1
 
         Me.CenterToScreen()
 
+<<<<<<< HEAD
+        Me.Refresh()
+
+=======
+>>>>>>> 655fbbde726ac32c16e61d1a6bdbd17011de602f
         mciSendString("open """ & startBGM & """ alias startBGM", Nothing, 0, IntPtr.Zero)
         mciSendString("open """ & Clicksound & """ alias ClickSound", Nothing, 0, IntPtr.Zero)
         mciSendString("play startBGM repeat", String.Empty, 0, 0)
