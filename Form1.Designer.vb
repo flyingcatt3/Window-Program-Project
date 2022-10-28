@@ -45,14 +45,14 @@ Partial Class Form1
         Me.Start.TabIndex = 0
         Me.Start.Text = "開始遊戲"
         Me.Start.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage
-        Me.Start.UseVisualStyleBackColor = True
+        Me.Start.UseVisualStyleBackColor = False
         '
         'GameTitle
         '
         Me.GameTitle.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.GameTitle.AutoSize = True
         Me.GameTitle.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.GameTitle.Font = New System.Drawing.Font("Taipei Sans TC Beta", 54.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point)
+        Me.GameTitle.Font = New System.Drawing.Font("Taipei Sans TC Beta", 54.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point)
         Me.GameTitle.ImageAlign = System.Drawing.ContentAlignment.TopCenter
         Me.GameTitle.Location = New System.Drawing.Point(2, 64)
         Me.GameTitle.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
@@ -80,24 +80,24 @@ Partial Class Form1
         '
         'StartLayout
         '
+        Me.StartLayout.BackColor = System.Drawing.Color.Transparent
         Me.StartLayout.ColumnCount = 1
         Me.StartLayout.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.StartLayout.Controls.Add(Me.Start, 0, 1)
         Me.StartLayout.Controls.Add(Me.GameTitle, 0, 0)
         Me.StartLayout.Location = New System.Drawing.Point(297, 101)
-        Me.StartLayout.Margin = New System.Windows.Forms.Padding(2)
+        Me.StartLayout.Margin = New System.Windows.Forms.Padding(0)
         Me.StartLayout.Name = "StartLayout"
         Me.StartLayout.RowCount = 2
         Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.StartLayout.Size = New System.Drawing.Size(691, 464)
         Me.StartLayout.TabIndex = 3
-        Me.StartLayout.Visible = False
         '
         'Form1
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
-        Me.BackColor = System.Drawing.SystemColors.ButtonFace
+        Me.BackColor = System.Drawing.Color.WhiteSmoke
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None
         Me.ClientSize = New System.Drawing.Size(1672, 683)
         Me.Controls.Add(Me.StartLayout)
@@ -111,7 +111,7 @@ Partial Class Form1
         Me.Name = "Form1"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Project"
+        Me.Text = "開始 - Visual Novel Engine"
         Me.StartLayout.ResumeLayout(False)
         Me.StartLayout.PerformLayout()
         Me.ResumeLayout(False)

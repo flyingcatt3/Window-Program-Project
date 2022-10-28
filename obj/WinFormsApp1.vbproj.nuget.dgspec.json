@@ -40,9 +40,17 @@
         "net7.0-windows7.0": {
           "targetAlias": "net7.0-windows",
           "dependencies": {
+            "LibVLCSharp": {
+              "target": "Package",
+              "version": "[3.6.7, )"
+            },
             "SixLabors.ImageSharp": {
               "target": "Package",
               "version": "[2.1.3, )"
+            },
+            "VideoLAN.LibVLC.Windows": {
+              "target": "Package",
+              "version": "[3.0.17.4, )"
             }
           },
           "imports": [

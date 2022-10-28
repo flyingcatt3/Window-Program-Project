@@ -1,6 +1,7 @@
 ﻿Imports SixLabors.ImageSharp
 Imports System.Drawing.Text
 Imports System.IO
+Imports LibVLCSharp.Shared
 
 Public Class Form1
 
@@ -8,12 +9,22 @@ Public Class Form1
     ReadOnly gamePath = Application.StartupPath
     ReadOnly storyPath = gamePath + "\story\"
     ReadOnly converted_imgPath = gamePath + "\converted_imgs\"
-    ReadOnly startBGM = gamePath + "start.mp3"
     ReadOnly StoryListBG = gamePath + "StoryListBG.jpg"
-    ReadOnly Clicksound = gamePath + "click.mp3"
+    ReadOnly Clicksound As String = gamePath + "click.mp3"
+    ReadOnly libvlc_repeat = New LibVLC("--role=music", "--input-repeat=65535", "--aout=mmedevice", "--mmdevice-backend=wasapi")
+    ReadOnly libvlc = New LibVLC("--mmdevice-backend=wasapi")
+    Dim startBGM As New List(Of String)()
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
+
+    Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
+        ' by making Generator static, we preserve the same instance '
+        ' (i.e., do not create new instances with the same seed over and over) '
+        ' between calls '
+        Static Generator As System.Random = New System.Random()
+        Return Generator.Next(Min, Max)
+    End Function
 
     Public Sub timeDelay(ByVal secondsDelayedBy As Double)
         Dim stopwatch As New Stopwatch
@@ -26,10 +37,6 @@ Public Class Form1
             End If
         Loop
     End Sub
-
-    Private Declare Function mciSendString Lib "winmm.dll" Alias "mciSendStringA" _
-    (ByVal lpstrCommand As String, ByVal lpstrReturnString As String,
-    ByVal uReturnLength As Integer, ByVal hwndCallback As Integer) As Integer
 
     Public Sub imgConverter(img As String)
         ImageExtensions.SaveAsJpeg(Image.Load(img), converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg")
@@ -48,9 +55,17 @@ Public Class Form1
 
     End Sub
 
-    Sub setstartclr(r, g, b)
-        Start.ForeColor = Drawing.Color.FromArgb(r, g, b)
-        timeDelay(0.0167) '60 fps
+    Sub setclr(control, r, g, b, op, interval)
+        If op = 1 Then
+            control.ForeColor = Drawing.Color.FromArgb(r, g, b)
+        ElseIf op = 0 Then
+            control.BackColor = Drawing.Color.FromArgb(r, g, b)
+        Else
+            control.FlatAppearance.BorderColor = Drawing.Color.FromArgb(r, g, b)
+        End If
+        If interval <> 0 Then
+            timeDelay(interval)
+        End If
         'ver.Text = r.ToString + "," + g.ToString + "," + b.ToString
     End Sub
 
@@ -74,13 +89,13 @@ Public Class Form1
                 Next
 
                 Do While StoryListTitle.Visible
-                    'can use timeDelay()
                     If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
                         StoryListTitle.Text = StoryListTitle.Text.Remove(4)
+                        timeDelay(0.1)
                         StoryListTitle.Text &= txt(4)
+                        timeDelay(0.1)
                     ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
-                        'Else timeDelay(0.25)
                     End If
                 Loop
 
@@ -91,42 +106,77 @@ Public Class Form1
         If Me.WindowState = FormWindowState.Minimized Then
             Start.Hide()
             Return 1
-        ElseIf Not StartLayout.Visible Then
+        ElseIf Not Start.Enabled Then
             Return 1
         Else Return 0
         End If
     End Function
 
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Sub Form1_Load() Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
         'DoubleBuffered = True
 
-        Me.Width = Screen.PrimaryScreen.Bounds.Width * 0.91
-        Me.Height = Screen.PrimaryScreen.Bounds.Width * 0.39
+        For Each foundFile As String In My.Computer.FileSystem.GetFiles(gamePath + "startBGM")
+            startBGM.Add(foundFile)
+        Next
+
+        Dim file As String = startBGM(GetRandom(0, startBGM.Capacity))
+        Dim media = New Media(libvlc_repeat, file)
+        Dim mediaPlayer = New MediaPlayer(media)
+
+        mediaPlayer.EnableHardwareDecoding = True
+        mediaPlayer.Volume = 70
+        mediaPlayer.Play()
+
+        Me.Width = Screen.PrimaryScreen.Bounds.Width * 0.98
+        Me.Height = Screen.PrimaryScreen.Bounds.Width * 0.42
         tmpWindowSize = Me.Size
 
         '初始化所需控制項的格式
         StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
                                        Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
 
-        ver.Text = "20221027"
+        ver.Text = "20221028"
         ver.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
 
         pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
 
-        StartLayout.Show()
+        Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
+        GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
 
         StoryListTitle.Hide()
         Me.Controls.Add(StoryListTitle)
 
         Me.CenterToScreen()
 
-        mciSendString("open """ & startBGM & """ alias startBGM", Nothing, 0, IntPtr.Zero)
-        mciSendString("open """ & Clicksound & """ alias ClickSound", Nothing, 0, IntPtr.Zero)
-        mciSendString("play startBGM repeat", String.Empty, 0, 0)
-        mciSendString("setaudio startBGM volume to 200", 0, 0, 0)
+    End Sub
 
+    Private Async Sub fadeStartLayout() Handles Start.Click
+        Dim startBorderR As Integer = Start.FlatAppearance.BorderColor.R
+        Dim startBorderG As Integer = Start.FlatAppearance.BorderColor.G
+        Dim startBorderB As Integer = Start.FlatAppearance.BorderColor.B
+        Dim meR As Integer = Me.BackColor.R
+        Dim meG As Integer = Me.BackColor.G
+        Dim meB As Integer = Me.BackColor.B
+        Start.Enabled = False
+        Start.Text = ""
+        Await Task.Run(
+            Sub()
+                While startBorderR Or startBorderG Or startBorderB Or meR Or meG Or meB
+                    If startBorderR Then startBorderR -= 1
+                    If startBorderG Then startBorderG -= 1
+                    If startBorderB Then startBorderB -= 1
+                    If meR Then meR -= 1
+                    If meG Then meG -= 1
+                    If meB Then meB -= 1
+                    setclr(Start, startBorderR, startBorderG, startBorderB, 2, 0)
+                    setclr(Me, meR, meG, meB, 0, 0.001)
+                    'ver.Text = startR.ToString() + " / " + startG.ToString() + " / " + startB.ToString()
+                End While
+            End Sub
+        )
+        ChooseStory()
     End Sub
 
     Private Sub buttonClickHandler() Handles MyBase.Load
@@ -143,81 +193,78 @@ Public Class Form1
     'https://stackoverflow.com/questions/48710165/back-colour-of-button-not-changing-when-updated-in-for-loop
     Public Async Sub StartColorCycle() Handles MyBase.Load
 
-        Dim r As Integer = Start.ForeColor.R
-        Dim g As Integer = Start.ForeColor.G
-        Dim b As Integer = Start.ForeColor.B
+        Dim startR As Integer = Start.ForeColor.R
+        Dim startG As Integer = Start.ForeColor.G
+        Dim startB As Integer = Start.ForeColor.B
 
         Await Task.Run(
             Sub()
                 Do While 1
 
-                    For x = g To r Mod 255
-                        g += 1
-                        setstartclr(r, g, b)
+                    For x = startG To startR Mod 255
+                        startG += 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
 
-                    For x = b Mod 255 + 1 To r
-                        r -= 1
-                        setstartclr(r, g, b)
+                    For x = startB Mod 255 + 1 To startR
+                        startR -= 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
 
-                    For x = b To g Mod 255
-                        b += 1
-                        setstartclr(r, g, b)
+                    For x = startB To startG Mod 255
+                        startB += 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
 
-                    For x = r Mod 255 + 1 To g
-                        g -= 1
-                        setstartclr(r, g, b)
+                    For x = startR Mod 255 + 1 To startG
+                        startG -= 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
 
-                    For x = g To b Mod 255
-                        r += 1
-                        setstartclr(r, g, b)
+                    For x = startG To startB Mod 255
+                        startR += 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
 
-                    For x = g Mod 255 + 1 To b
-                        b -= 1
-                        setstartclr(r, g, b)
+                    For x = startG Mod 255 + 1 To startB
+                        startB -= 1
+                        setclr(Start, startR, startG, startB, 1, 0.01)
                         If hideStart() Then
                             Exit Do
                         End If
                     Next
-
                 Loop
-
-            End Sub)
-
+            End Sub
+            )
     End Sub
 
     Sub ButtonClick()
-
-        mciSendString("play ClickSound", String.Empty, 0, 0)
-        timeDelay(0.25)
-        mciSendString("seek ClickSound to start", String.Empty, 0, 0)
-        'MsgBox("hello")
-
+        Dim media = New Media(libvlc, Clicksound)
+        Dim mediaplayer = New MediaPlayer(media)
+        mediaplayer.EnableHardwareDecoding = True
+        mediaplayer.Play()
     End Sub
 
     Sub ButtonCursor(sender As Button, e As EventArgs)
         sender.Cursor = Cursors.Hand
     End Sub
-    Private Sub ChooseStory() Handles Start.Click
+
+    Private Sub ChooseStory()
 
         StartLayout.Hide()
 
@@ -226,16 +273,18 @@ Public Class Form1
         'End If
         'img = Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
 
-        Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
-        Me.BackgroundImageLayout = ImageLayout.Stretch
+        Me.Text = "選擇故事 - Visual Novel Engine"
 
-        StoryListTitle.Location = Me.Size / 20
-        StoryListTitle.Anchor = Drawing.ContentAlignment.TopLeft
+        Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
+        Me.BackgroundImageLayout = ImageLayout.Zoom
+
+        StoryListTitle.Anchor = Drawing.ContentAlignment.MiddleLeft
+        StoryListTitle.TextAlign = Drawing.ContentAlignment.MiddleLeft
         StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
         StoryListTitle.ForeColor = Drawing.Color.White
         StoryListTitle.BackColor = Drawing.Color.FromArgb(120, 0, 0, 0)
-        StoryListTitle.Width = Me.Size.Width * 0.9
-        StoryListTitle.Height = Me.Size.Height * 0.9
+        StoryListTitle.Width = Me.Size.Width
+        StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
         StoryListTitle.Text = ""
         StoryListTitle.Show()
         setStoryListTitle()
@@ -248,9 +297,8 @@ Public Class Form1
     Private Sub ControlLayout(sender As Object, e As EventArgs) Handles Me.Resize
 
         If StoryListTitle.Visible Then
-            StoryListTitle.Location = Me.Size / 20
-            StoryListTitle.Width = Me.Size.Width * 0.9
-            StoryListTitle.Height = Me.Size.Height * 0.9
+            StoryListTitle.Width = Me.Size.Width
+            StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
         End If
 
         If StartLayout.Visible Then
@@ -260,9 +308,8 @@ Public Class Form1
 
         '視窗從最小化後恢復
         If Me.WindowState <> FormWindowState.Minimized And Not StoryListTitle.Visible And Not StartLayout.Visible Then
-            StoryListTitle.Location = Me.Size / 20
-            StoryListTitle.Width = Me.Size.Width * 0.9
-            StoryListTitle.Height = Me.Size.Height * 0.9
+            StoryListTitle.Width = Me.Size.Width
+            StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
             StoryListTitle.Show()
             setStoryListTitle()
@@ -286,6 +333,7 @@ Public Class Form1
     Private Sub resumeScreen() Handles Me.ResizeEnd
         resizing = False
     End Sub
+
 
     'Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
 
