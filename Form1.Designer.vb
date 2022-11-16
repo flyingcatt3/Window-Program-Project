@@ -31,21 +31,21 @@ Partial Class Form1
         '
         'Start
         '
-        Me.Start.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Start.AutoSize = True
+        Me.Start.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Start.FlatAppearance.BorderColor = System.Drawing.Color.Silver
         Me.Start.FlatAppearance.BorderSize = 2
         Me.Start.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Start.Font = New System.Drawing.Font("Taipei Sans TC Beta", 36.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point)
         Me.Start.ForeColor = System.Drawing.Color.MediumSeaGreen
-        Me.Start.Location = New System.Drawing.Point(2, 306)
+        Me.Start.Location = New System.Drawing.Point(2, 361)
         Me.Start.Margin = New System.Windows.Forms.Padding(2)
         Me.Start.Name = "Start"
-        Me.Start.Size = New System.Drawing.Size(687, 83)
+        Me.Start.Size = New System.Drawing.Size(948, 101)
         Me.Start.TabIndex = 0
         Me.Start.Text = "開始遊戲"
         Me.Start.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage
-        Me.Start.UseVisualStyleBackColor = False
+        Me.Start.UseVisualStyleBackColor = True
         '
         'GameTitle
         '
@@ -54,10 +54,10 @@ Partial Class Form1
         Me.GameTitle.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.GameTitle.Font = New System.Drawing.Font("Taipei Sans TC Beta", 54.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point)
         Me.GameTitle.ImageAlign = System.Drawing.ContentAlignment.TopCenter
-        Me.GameTitle.Location = New System.Drawing.Point(2, 64)
+        Me.GameTitle.Location = New System.Drawing.Point(2, 127)
         Me.GameTitle.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.GameTitle.Name = "GameTitle"
-        Me.GameTitle.Size = New System.Drawing.Size(687, 104)
+        Me.GameTitle.Size = New System.Drawing.Size(948, 104)
         Me.GameTitle.TabIndex = 1
         Me.GameTitle.Text = "(遊戲名稱)"
         Me.GameTitle.TextAlign = System.Drawing.ContentAlignment.TopCenter
@@ -89,16 +89,16 @@ Partial Class Form1
         Me.StartLayout.Margin = New System.Windows.Forms.Padding(0)
         Me.StartLayout.Name = "StartLayout"
         Me.StartLayout.RowCount = 2
-        Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.StartLayout.Size = New System.Drawing.Size(691, 464)
+        Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 77.37069!))
+        Me.StartLayout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 22.62931!))
+        Me.StartLayout.Size = New System.Drawing.Size(952, 464)
         Me.StartLayout.TabIndex = 3
         '
         'Form1
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.BackColor = System.Drawing.Color.WhiteSmoke
-        Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None
+        Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
         Me.ClientSize = New System.Drawing.Size(1672, 683)
         Me.Controls.Add(Me.StartLayout)
         Me.Controls.Add(Me.ver)
@@ -121,6 +121,6 @@ Partial Class Form1
 
     Friend WithEvents Start As Button
     Friend WithEvents GameTitle As Label
-	Friend WithEvents StartLayout As TableLayoutPanel
-	Public WithEvents ver As Label
+    Friend WithEvents StartLayout As TableLayoutPanel
+    Public WithEvents ver As Label
 End Class
