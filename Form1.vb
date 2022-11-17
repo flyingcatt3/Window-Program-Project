@@ -311,11 +311,11 @@ Public Class Form1
         storyTable.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
         storyTable.ForeColor = Drawing.Color.White
         storyTable.Margin = New Padding(0, 0, 0, 0)
+        storyTable.Padding = New Padding(0, 30, 0, 30)
         storyTable.RowCount = 2
         storyTable.ColumnCount = 1
         storyTable.Location = New Drawing.Point(Me.Size.Width * 0.1, Me.Size.Height / 5)
         storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
-        storyTable.Padding = New Padding(0, 30, 0, 30)
 
         Dim btns(storyNameList.Count) As Button
         For count = 0 To storyNameList.Count - 1
