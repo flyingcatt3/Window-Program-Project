@@ -364,6 +364,7 @@ Public Class Form1
         Me.Text = "選擇故事 - Visual Novel Engine"
         Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Zoom
+        Me.AllowDrop = True
         Me.Controls.Add(storyTable)
         StoryListTitle.Show()
         setStoryListTitle()
@@ -411,6 +412,19 @@ Public Class Form1
 
     Private Sub resumeScreen() Handles Me.ResizeEnd
         resizing = False
+    End Sub
+
+    'Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+    'Me.AllowDrop = True
+    'End Sub
+
+    Private Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
+        Dim DragFilePath As String = CType(e.Data.GetData("FileNameW"), Array).GetValue(0)
+        'MsgBox(DragFilePath)
+    End Sub
+
+    Private Sub FileDragEnter(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragEnter
+        e.Effect = DragDropEffects.All
     End Sub
 
 
