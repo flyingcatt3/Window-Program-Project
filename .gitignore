@@ -1,2 +1,3 @@
 !bin/Release/net7.0-windows/story/*
+!bin/Release/net7.0-windows/converted_imgs/*
 !.gitignore
