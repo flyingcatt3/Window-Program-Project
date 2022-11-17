@@ -414,10 +414,6 @@ Public Class Form1
         resizing = False
     End Sub
 
-    'Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-    'Me.AllowDrop = True
-    'End Sub
-
     Private Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
         Dim DragFilePath As String = CType(e.Data.GetData("FileNameW"), Array).GetValue(0)
         'MsgBox(DragFilePath)
