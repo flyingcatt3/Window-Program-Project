@@ -172,6 +172,7 @@ Public Class Form1
         Dim meG As Integer = Me.BackColor.G
         Dim meB As Integer = Me.BackColor.B
 
+        ver.Dispose()
         Start.Enabled = False
         Start.Text = ""
 
