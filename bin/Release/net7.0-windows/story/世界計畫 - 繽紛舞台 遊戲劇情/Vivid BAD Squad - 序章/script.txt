@@ -1,0 +1,368 @@
+title_fullscreen "爸爸是我一直很崇拜的音樂人。"
+sound voice_op_street0_01_10.mp3
+title_fullscreen "我想做出像爸爸那樣的表演，" " 讓觀眾們為之瘋狂，" "我從小時候開始就這麼想……"
+sound voice_op_street0_02_10.mp3
+title_fullscreen "不過從那天起，" " 這個想法就轉變成鮮明的「夢想」。"
+sound voice_op_street0_03_10.mp3
+title_fullscreen "就在我看見那個傳說之夜的那天起──"
+sound voice_op_street0_04_10.mp3
+fade_white
+background bg_c000601.webp
+sound se00021.mp3
+music bgm00030.mp3
+txt "觀眾A" "好多觀眾啊， " "都是來看KEN他們的嗎？"
+txt "觀眾B" "嗯，好像是。大家不知道從哪裡聽到了" "「今天能欣賞一個很不得了的表演」。"
+txt "國中時期的杏" "（爸爸辦的活動每次都有很多觀眾，" "但總覺得今天人特別多……）"
+sound voice_op_street0_05_10.mp3
+sound se00039.mp3
+txt "觀眾A" "啊，差不多要開始了！"
+txt "國中時期的杏" "……！"
+sound voice_op_street0_06_10.mp3
+fade_black
+background bg_a000002.webp
+sound se00039.mp3
+txt "國中時期的杏" "（好、好棒……！" "好厲害好厲害～！）"
+sound voice_op_street0_07_10.mp3
+txt "國中時期的杏" "（比平常的表演……不對，" "是比目前為止的任何一場表演都還要更精彩……！）"
+sound voice_op_street0_08_10.mp3
+txt "國中時期的杏" "（在場這麼多觀眾，" "都沉醉在爸爸他們的表演中……）"
+sound voice_op_street0_09_10.mp3
+txt "國中時期的杏" "（明明人就多到擠得要命，" "但大家卻越來越熱情…… " "我也想要更投入……！）"
+sound voice_op_street0_10_10.mp3
+txt "國中時期的杏" "（我想辦……）"
+sound voice_op_street0_11_10.mp3
+txt "國中時期的杏" "（有一天，我也要辦一場像這樣的活動。）"
+sound voice_op_street0_12_10.mp3
+txt "國中時期的杏" "（不對，我一定會辦成功！" "我要辦一場超越「RAD WEEKEND」的完美活動，" "總有一天，我一定要辦到……！）"
+sound voice_op_street0_13_10.mp3
+stopmusic
+fade_white
+background bg_c000101.webp
+description "幾年後"
+music bgm00035.mp3
+description "WEEKEND GARAGE"
+txt "杏" "久等了，妳點的咖啡！"
+sound "voice_op_street0_14_10.mp3
+character 48.png center
+txt "女性常客" "謝謝妳。對了，小杏，" "妳找到搭檔了嗎？"
+character 50.png center
+txt "杏""還沒耶，" "雖然一直在找，不過還沒找到呢～"
+sound voice_op_street0_15_10.mp3
+txt "女性常客" "之前不是有一個音樂人來找妳組團嗎？ " "聽說妳拒絕了？ " " 我聽說對方幾乎有發專輯的水準……"
+character 52.png center
+character 53.png center
+txt "杏" "嗯～那個人雖然不錯，" "但當我說想辦一場超越「RAD WEEKEND」的活動，" "他就回我說不可能。"
+sound voice_op_street0_16_10.mp3
+txt "女性常客" "啊，那就沒辦法了。"
+txt "女性常客" "不過……我能理解為什麼對方說不可能，" "實在很難想像有什麼樣的演出可以超越那一夜。"
+character 58.png center
+txt "杏" "哎呀，果然一般人會這樣想……"
+sound voice_op_street0_17_10.mp3
+character 61.png center
+txt "杏" "……不過看著吧，我一定會超越的！"
+sound voice_op_street0_18_10.mp3
+fade_black
+character 65.png center
+txt "杏" "好，都收拾得差不多了！"
+sound voice_op_street0_19_10.mp3
+character 68.png center
+txt "杏" "爸爸，咖啡時段結束了， 我出去一趟喔！"
+sound voice_op_street0_20_10.mp3
+character 68.png left
+character 72.png right
+txt "杏的父親" "哦，又要去街頭LIVE演唱對吧？" " 別跟其他音樂人吵架啊。"
+sound voice_ms_street0_01_67.mp3
+character 75.png left
+character 76.png left
+txt "杏" "知道啦！ 我已經不是小孩子了……那我出門囉！"
+sound voice_op_street0_21_10.mp3
+hide_left
+character 79.png right
+txt "杏的父親" "嗯，路上小心。"
+sound voice_ms_street0_02_67.mp3
+stopmusic
+fade_black
+music bgm00006.mp3
+background bg_a002302.webp
+description "十字路口"
+character 88.png center
+character 89.png center
+txt "杏" "好！" "麥克風也準備好囉，差不多可以開始唱了？"
+sound voice_op_street0_22_10.mp3
+txt "男性路人" "喔，小杏！" "今天的LIVE演唱也要加油喔。"
+txt "女性路人" "杏～！" "我今天帶朋友來囉，替妳加油打氣！"
+character 94.png center
+character 95.png center
+txt "杏" "呵呵，謝謝大家一直支持！ " "今天我也會盡情地歌唱哦～！"
+sound voice_op_street0_23_10.mp3
+fade_black
+stopmusic
+character 100.png center
+txt "杏" "♪────♪────"
+sound se00125.mp3 center
+character 103.png center
+txt "（嗯，喉嚨的狀況也不錯，" "觀眾也增加了，再繼續炒熱氣氛吧！）"
+sound voice_op_street0_25_10.mp3
+character 106.png center
+txt "？？？" "……好厲害。"
+sound voice_op_street0_26_09.mp3
+character 109.png center
+txt "？？？" "好帥啊……能那麼大方地在街邊唱歌。" "要是我也有這樣的勇氣……"
+sound voice_op_street0_27_09.mp3
+fade_black
+stopmusic
+music bgm00024.mp3
+character 114.png center
+character 115.png center
+txt "杏" "呼，今天大家也很捧場，" "感覺完成了一場很棒的表演！"
+sound voice_op_street0_28_10.mp3
+character 118.png center
+txt "杏" "……不過，這還遠遠不夠。"
+sound voice_op_street0_29_10.mp3
+character 121.png center
+character 122.png center
+txt "杏" "我得做更多的練習，" "而且更重要的是，" "我得找到可以跟我一起辦活動的搭檔。"
+sound voice_op_street0_30_10.mp3
+character 125.png center
+character 126.png center
+txt "杏" "不不不，雖然很辛苦，但還是得做！"
+sound voice_op_street0_31_10.mp3
+txt "杏" "因為我要辦一場" "不輸給「RAD WEEKEND」的超棒活動！"
+sound voice_op_street0_32_10.mp3
+stopmusic
+flash
+character 134.png center
+txt "杏" "唔，怎麼了？手機突然發光……"
+sound voice_op_street0_33_10.mp3
+character 137.png center
+txt "杏" "《Untitled（無題）》？" "我有放這首歌進來嗎？"
+sound voice_op_street0_34_10.mp3
+flash
+sound se00092.mp3
+character 142.png center
+txt "杏" "哇，好亮……！？"
+sound voice_op_street0_35_10.mp3
+fade_white
+background bg_c000501.webp
+music bgm_area00003.mp3
+description "？？？"
+character 149.png center
+txt "杏" "……咦？這裡是哪裡？"
+sound voice_op_street0_36_10.mp3
+character 152.png center
+character 153.png center
+txt "杏" "是一間咖啡廳……？" "不過我剛才應該是在十字路口上啊……？"
+sound voice_op_street0_37_10.mp3
+character 156.png center
+txt "？？？" "這、這是哪裡……？ " "怎麼辦，跑到不認識的地方了……"
+sound voice_op_street0_38_09.mp3
+character 156.png left
+character 160.png right
+txt "杏" "咦，是誰？"
+sound voice_op_street0_39_10.mp3
+character 163.png left
+character 164.png left
+txt "？？？" "哇……！？" "抱歉，那個，我是……"
+sound voice_op_street0_40_09.mp3
+character 167.png right
+txt "杏" "啊，難道妳是這間店裡的人嗎？" "不好意思，妳可以告訴我這裡是什麼地方嗎？"
+sound voice_op_street0_41_10.mp3
+character 170.png right
+txt "杏" "雖然這樣說很怪，但我突然就移動到這裡來……"
+sound voice_op_street0_42_10.mp3
+character 173.png left
+txt "？？？" "啊，那個……其實我也是……" "突然來到這裡……"
+sound voice_op_street0_43_09.mp3
+character 176.png right
+txt "杏" "什麼？妳也是？"
+sound voice_op_street0_44_10.mp3
+character 179.png center
+txt "初音未來" "心羽、杏，歡迎妳們。"
+sound voice_op_street0_45_21_street.mp3
+character 179.png left
+character 163.png right
+character 184.png right
+txt "心羽" "咦？是……是小未來！？" "而且妳怎麼知道我的名字……？"
+sound voice_op_street0_46_09.mp3
+character 187.png center
+txt "鏡音連" "哈囉～！ 我們等妳們很久囉！"
+sound voice_op_street0_47_23_street.mp3
+character 190.png center
+character 191.png center
+txt "MEIKO" "呵呵，小羽、小杏，" "妳們突然到這裡，一定嚇到了……" "不過很高興可以見到妳們哦。"
+sound voice_op_street0_48_25_street.mp3
+character 184.png center
+txt "心羽" "什麼！？連和MEIKO姐也在……！？"
+sound voice_op_street0_49_09.mp3
+character 184.png left
+character 149.png right
+character 199.png right
+txt "杏" "不不不，這太奇怪了吧！" "怎麼可能跟初音未來他們講話……" "難道這都是夢嗎？"
+sound voice_op_street0_50_10.mp3
+character 202.png left
+txt "初音未來" "不對，這裡是「世界」喔。"
+sound voice_op_street0_51_21_street.mp3
+character 205.png right
+txt "心羽" "「世界」……？"
+sound voice_op_street0_52_09.mp3
+character 208.png center
+txt "初音未來" "對。從妳們的心願中誕生的空間……" "就是所謂的「世界」。"
+sound voice_op_street0_53_21_street.mp3
+character 170.png center
+txt "杏" "從心願中誕生的空間？"
+sound voice_op_street0_54_10.mp3
+character 170.png left
+character 190.png right
+character 191.png right
+txt "MEIKO" "對呀。而在「世界」中找到真正心願時，" "歌曲就會從心願中誕生。"
+sound voice_op_street0_55_25_street.mp3
+character 219.png right
+txt "鏡音連" "我們在這裡， 就是為了幫助妳們找到真正心願！"
+sound voice_op_street0_56_23_street.mp3
+character 222.png left
+txt "杏" "真正心願？會生出歌曲……？"
+sound voice_op_street0_57_10.mp3
+character 225.png left
+txt "杏" "嗯～抱歉，我完全聽不懂你們在說什麼。"
+sound voice_op_street0_58_10.mp3
+character 228.png right
+character 229.png right
+character 230.png right
+txt "鏡音連" "啊哈哈，這也難怪啦～ " "不過現在不懂也沒關係，" "總有一天會明白啦！"
+sound voice_op_street0_59_23_street.mp3
+character 233.png right
+character 234.png right
+txt "鏡音連" "不管是「世界」，還是真正心願，都會懂的。"
+sound voice_op_street0_60_23_street.mp3
+character 237.png center
+txt "心羽" "真、真正心願……"
+sound voice_op_street0_61_09.mp3
+character 240.png center
+character 241.png center
+txt "心羽" "我也會有心願嗎……？" "我都還不知道自己想做什麼……"
+sound voice_op_street0_62_09.mp3
+character 241.png left
+character 208.png right
+txt "初音未來" "心羽，妳沒有想做的事嗎？"
+sound voice_op_street0_63_21_street.mp3
+character 248.png left
+txt "心羽" "啊……那個……我、我沒有什麼夢想……" "所以……"
+sound voice_op_street0_64_09.mp3
+character 251.png center
+txt "初音未來" "嗯……是這樣嗎？ " "那杏呢？"
+sound voice_op_street0_65_21_street.mp3
+character 251.png left
+character 160.png right
+character 126.png right
+txt "杏" "我嗎？" "那當然是超越傳說囉！"
+sound voice_op_street0_66_10.mp3
+character 259.png left
+txt "心羽" "傳、傳說……？"
+sound voice_op_street0_67_09.mp3
+character 262.png right
+character 125.png right
+txt "杏" "對。我國中時看了一個叫「RAD WEEKEND」的活動，" "從那時候開始，我就決定要超越它。"
+sound voice_op_street0_68_10.mp3
+character 48.png right
+character 267.png right
+txt "杏" "那場活動真是熱血到不行，" "所以大家都說「不可能超越那場傳說中的活動」……"
+sound voice_op_street0_69_10.mp3
+character 126.png right
+txt "杏" "不過看著吧，我一定會超越！"
+sound voice_op_street0_70_10.mp3
+character 273.png left
+character 274.png left
+txt "心羽" "好厲害……妳好帥……！"
+sound voice_op_street0_71_09.mp3
+character 222.png right
+character 278.png right
+txt "杏" "是嗎？我都有點不好意思了。" " 不過我程度還差得遠了。" "練習完全不夠，也還沒找到搭檔。"
+sound voice_op_street0_72_10.mp3
+character 281.png right
+character 88.png right
+txt "杏" "但即使如此，如果不試試看就不會有開始。" "我現在每天都會去街頭演唱，" "也有參加活動演出來磨練技巧。"
+sound voice_op_street0_73_10.mp3
+character 285.png left
+txt "心羽" "如果不試試看，就不會有開始……"
+sound voice_op_street0_74_09.mp3
+character 288.png left
+character 289.png left
+txt "心羽" "……是這樣啊。那我也應該不要一直煩惱，" "先踏出第一步，或許就會有所改變嗎……？"
+sound voice_op_street0_75_09.mp3
+character 167.png right
+character 293.png right
+txt "說不定喔？" "不過也可以看妳心情，想做的時候再做也可以吧？"
+sound voice_op_street0_76_10.mp3
+character 296.png left
+txt ""
+character 298.png center
+txt "初音未來" "……呵呵，" "如果妳們兩個一起，一定能找到心願。"
+sound voice_op_street0_77_21_street.mp3
+stopmusic
+character 302.png
+txt "心羽" "咦？有光……？" left
+sound voice_op_street0_78_09.mp3
+character 149.png right
+txt "杏" "又、又來了！？"
+sound voice_op_street0_79_10.mp3
+character 298.png right
+txt "初音未來" "只要妳們的心願相同，一定能再次在「世界」相見。" "所以──"
+sound voice_op_street0_80_21_street.mp3
+fade_white
+background bg_c000101.webp
+music bgm0035.mp3
+location "WEEKEND GARAGE"
+character 315.png center
+txt "杏的父親" "……喂，杏，起來了。" "睡這裡小心感冒。"
+sound voice_ms_street0_03_67.mp3
+character 315.png left
+character 160.png right
+character 149.png right
+txt "杏" "嗯……？咦，我什麼時候睡著的……？" "欸，已經到酒吧的營業時間了！？" "我得趕快準備……！"
+sound voice_op_street0_81_10.mp3
+character 323.png center
+txt "杏的父親" "難得看妳在這邊打嗑睡，最近很累嗎？"
+sound voice_ms_street0_04_67.mp3
+character 323.png left
+character 327.png right
+txt "杏" "我覺得不會……" "總覺得做了一場奇妙的夢……"
+sound voice_op_street0_82_10.mp3
+character 315.png left
+txt "杏的父親" "夢？"
+sound voice_ms_street0_05_67.mp3
+character 333.png right
+txt "杏" "嗯！雖然記不清楚了，" "但感覺好像在跟誰聊天……"
+sound voice_op_street0_83_10.mp3
+character 48.png right
+txt "杏" "算了！" "我把招牌拿出去囉！"
+sound voice_op_street0_84_10.mp3
+stopmusic
+fade_black
+background bg_c000703.webp
+music bgm00024.mp3
+description "心羽的房間"
+character 302.png center
+txt "心羽" "……咦？"
+sound voice_op_street0_85_09.mp3
+character 347.png center
+txt "心羽" "我什麼時候睡著了？"
+sound voice_op_street0_86_09.mp3
+character 350.png center
+txt "心羽" "總覺得在夢中， " "遇見一個很棒的女生，還跟她聊天……"
+sound voice_op_street0_87_09b.mp3
+character 353.png center
+txt "心羽" "嗯～想不起來……"
+sound voice_op_street0_88_09.mp3
+character 259.png center
+txt "心羽" "（……不過是為什麼呢？）"
+sound voice_op_street0_89_09.mp3
+character 359.png center
+txt "心羽" "（感覺好像是一個新的開始。）"
+sound voice_op_street0_90_09.mp3
+fade_black
+stopmusic
+video street.mp4
+exit
+
+
+
