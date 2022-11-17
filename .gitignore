@@ -1,0 +1,2 @@
+!bin/Release/net7.0-windows/story/*
+!.gitignore
