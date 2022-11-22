@@ -2,8 +2,27 @@
 Imports System.Drawing.Text
 Imports System.IO
 Imports LibVLCSharp.Shared
+Imports System.Threading
 
 Public Class Form1
+
+    Public Class CustomTableLayoutPanel
+        Inherits TableLayoutPanel
+
+        Public Sub New()
+            DoubleBuffered = True
+            SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+            BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
+            ForeColor = Drawing.Color.White
+            Margin = New Padding(0, 0, 0, 0)
+            Padding = New Padding(0, 30, 0, 30)
+            RowCount = 2
+            ColumnCount = 1
+            Anchor = AnchorStyles.None
+            SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+        End Sub
+
+    End Class
 
     ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
     ReadOnly gamePath = Application.StartupPath
@@ -12,10 +31,12 @@ Public Class Form1
     ReadOnly StoryListBG = gamePath + "StoryListBG.jpg"
     ReadOnly Clicksound As String = gamePath + "click.mp3"
     ReadOnly libvlc_repeat = New LibVLC("--role=music", "--input-repeat=65535", "--aout=mmedevice", "--mmdevice-backend=wasapi")
-    ReadOnly libvlc = New LibVLC("--mmdevice-backend=wasapi")
+    ReadOnly libvlc = New LibVLC("--role=music", "--aout=mmedevice", "--mmdevice-backend=wasapi")
     Dim startBGM As New List(Of String)()
+    Dim storyTableList As New List(Of TableLayoutPanel)()
+    Dim storyTableCounter As Integer = 0
+    Dim storyTableCurrentIndex As Integer = 0
     Dim StoryListTitle As New Label()
-    Dim storyTable As New TableLayoutPanel
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
 
@@ -27,21 +48,25 @@ Public Class Form1
         Return Generator.Next(Min, Max)
     End Function
 
-    Public Sub timeDelay(ByVal secondsDelayedBy As Double)
-        Dim stopwatch As New Stopwatch
-        Dim endtimer = False
-        stopwatch.Start()
-        Do Until endtimer = True
-            If stopwatch.ElapsedMilliseconds > (secondsDelayedBy * 1000) Then
-                endtimer = True
-                stopwatch.Stop()
-            End If
-        Loop
-    End Sub
+    Public Function hideStart()
+        If Me.WindowState = FormWindowState.Minimized Then
+            Start.Hide()
+            Return 1
+        ElseIf Not Start.Enabled Then
+            Return 1
+        Else Return 0
+        End If
+    End Function
 
-    Public Sub imgConverter(img As String)
+    Public Function imgConverter(img As String)
         ImageExtensions.SaveAsJpeg(Image.Load(img), converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg")
-    End Sub
+        Return converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg"
+    End Function
+
+    Public Function center(ctrl As Control)
+        Return New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - ctrl.Width / 2),
+                                       Convert.ToInt32(Me.ClientSize.Height / 2 - ctrl.Height / 2))
+    End Function
 
     Private Sub fullscreen(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
 
@@ -65,7 +90,7 @@ Public Class Form1
             control.FlatAppearance.BorderColor = Drawing.Color.FromArgb(a, r, g, b)
         End If
         If interval Then
-            timeDelay(interval)
+            Thread.Sleep(interval)
         End If
         'ver.Text = r.ToString + "," + g.ToString + "," + b.ToString
     End Sub
@@ -92,9 +117,9 @@ Public Class Form1
                 Do While StoryListTitle.Visible
                     If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
                         StoryListTitle.Text = StoryListTitle.Text.Remove(4)
-                        timeDelay(0.1)
+                        Thread.Sleep(100)
                         StoryListTitle.Text &= txt(4)
-                        timeDelay(0.1)
+                        Thread.Sleep(100)
                     ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
                     End If
@@ -103,15 +128,7 @@ Public Class Form1
             End Sub)
     End Sub
 
-    Function hideStart()
-        If Me.WindowState = FormWindowState.Minimized Then
-            Start.Hide()
-            Return 1
-        ElseIf Not Start.Enabled Then
-            Return 1
-        Else Return 0
-        End If
-    End Function
+
 
     Private Sub Form1_Load() Handles MyBase.Load
 
@@ -141,9 +158,7 @@ Public Class Form1
         AddHandler Start.Click, AddressOf ButtonClick
         AddHandler Start.GotFocus, AddressOf ButtonCursor
 
-        StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
-                                       Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
-
+        StartLayout.Location = center(StartLayout)
 
         ver.Text = "Version" + Today.ToString("  yyyyMMdd")
         ver.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
@@ -153,8 +168,8 @@ Public Class Form1
         Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
         GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
 
-        StoryListTitle.Hide()
-        Me.Controls.Add(StoryListTitle)
+        'StoryListTitle.Hide()
+
         Me.CenterToScreen()
         StartColorCycle()
         ChooseStory_PreLoad()
@@ -185,7 +200,7 @@ Public Class Form1
                     If startBorderR Then startBorderR -= 1
                     If startBorderG Then startBorderG -= 1
                     If startBorderB Then startBorderB -= 1
-                    setclr(Me, meA, meR, meG, meB, 0, 0.001)
+                    setclr(Me, meA, meR, meG, meB, 0, 1)
                     setclr(Start, startBorderA, startBorderR, startBorderG, startBorderB, 2, 0)
                     'ver.Text = startR.ToString() + " / " + startG.ToString() + " / " + startB.ToString()
                 End While
@@ -209,7 +224,7 @@ Public Class Form1
 
                     For x = startG To startR Mod 255
                         startG += 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -217,7 +232,7 @@ Public Class Form1
 
                     For x = startB Mod 255 + 1 To startR
                         startR -= 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -225,7 +240,7 @@ Public Class Form1
 
                     For x = startB To startG Mod 255
                         startB += 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -233,7 +248,7 @@ Public Class Form1
 
                     For x = startR Mod 255 + 1 To startG
                         startG -= 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -241,7 +256,7 @@ Public Class Form1
 
                     For x = startG To startB Mod 255
                         startR += 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -249,7 +264,7 @@ Public Class Form1
 
                     For x = startG Mod 255 + 1 To startB
                         startB -= 1
-                        setclr(Start, startA, startR, startG, startB, 1, 0.01)
+                        setclr(Start, startA, startR, startG, startB, 1, 10)
                         If hideStart() Then
                             Exit Do
                         End If
@@ -281,93 +296,87 @@ Public Class Form1
         StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
         StoryListTitle.Text = ""
 
-        'TODO:增加選擇故事的功能
-
-        Dim storyLogoList As New List(Of String)() '用於Button，在storyTable上半部
-        Dim storyNameList As New List(Of Label)() '在下半部
-
         For Each foundDir As String In My.Computer.FileSystem.GetDirectories(storyPath)
 
             Dim dirInfo As New System.IO.DirectoryInfo(foundDir)
+            Dim storyTable As New CustomTableLayoutPanel
             Dim storyName As New Label
+            Dim storyBtn As New Button
 
             storyName.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
             storyName.Text = dirInfo.Name
+            'MsgBox(storyName.Text)
             storyName.ForeColor = Drawing.Color.White
             storyName.BackColor = Drawing.Color.Transparent
-            storyName.Size = New Drawing.Size(storyTable.Width, 150)
+            storyName.Size = New Drawing.Size(Me.Size.Width * 0.8, 150)
             storyName.TextAlign = Drawing.ContentAlignment.MiddleCenter
             storyName.Anchor = AnchorStyles.Bottom
 
-            storyNameList.Add(storyName)
+            storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
+            storyTable.Location = center(storyTable)
+
+            storyBtn.Anchor = AnchorStyles.Top
+            storyBtn.BackColor = Drawing.Color.Transparent
+            storyBtn.Dock = DockStyle.Fill
+            storyBtn.FlatStyle = FlatStyle.Flat
+            storyBtn.FlatAppearance.BorderSize = 0
+            storyBtn.FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
+            storyBtn.FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
+            storyBtn.Size = New Drawing.Size(storyTable.Width, storyTable.Height - 210)
+            storyBtn.BackgroundImageLayout = ImageLayout.Zoom
             If File.Exists(foundDir + "\logo.png") Then
-                storyLogoList.Add(foundDir + "\logo.png")
+                storyBtn.BackgroundImage = Drawing.Image.FromFile(foundDir + "\logo.png")
             Else
-                storyLogoList.Add(gamePath + "Image_not_available.png")
+                storyBtn.BackgroundImage = Drawing.Image.FromFile(gamePath + "Image_not_available.png")
             End If
-            'MsgBox(dirInfo.Name)
+            AddHandler storyBtn.Click, AddressOf ButtonClick
+            AddHandler storyBtn.GotFocus, AddressOf ButtonCursor
+
+            storyTable.Controls.Add(storyBtn, 0, 0)
+            storyTable.Controls.Add(storyName, 0, 1)
+            storyTableList.Add(storyTable)
+
+            storyTableCounter += 1
         Next
 
-        storyTable.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
-        storyTable.ForeColor = Drawing.Color.White
-        storyTable.Margin = New Padding(0, 0, 0, 0)
-        storyTable.Padding = New Padding(0, 30, 0, 30)
-        storyTable.RowCount = 2
-        storyTable.ColumnCount = 1
-        storyTable.Location = New Drawing.Point(Me.Size.Width * 0.1, Me.Size.Height / 5)
-        storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
-
-        Dim btns(storyNameList.Count) As Button
-        For count = 0 To storyNameList.Count - 1
-            btns(count) = New Button
-            btns(count).Anchor = AnchorStyles.Top
-            btns(count).BackColor = Drawing.Color.Transparent
-            btns(count).Dock = DockStyle.Fill
-            btns(count).FlatStyle = FlatStyle.Flat
-            btns(count).FlatAppearance.BorderSize = 0
-            btns(count).FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
-            btns(count).FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
-            btns(count).Size = New Drawing.Size(storyTable.Width, storyTable.Height - 210)
-            btns(count).BackgroundImage = Drawing.Image.FromFile(storyLogoList(0))
-            btns(count).BackgroundImageLayout = ImageLayout.Zoom
-            AddHandler btns(count).Click, AddressOf ButtonClick
-            AddHandler btns(count).GotFocus, AddressOf ButtonCursor
-            storyTable.Controls.Add(btns(count), 0, count)
-            'MsgBox(btns(count).Text)
-        Next count
-
-        If storyNameList.Count Then
-            storyTable.Controls.Add(btns(0), 0, 0)
-            storyTable.Controls.Add(storyNameList(0), 1, 0)
-        Else
+        'If story don't exist in storyPath...
+        If Not CBool(storyTableCounter) Then
             Dim storyNotFound As New Label
-            storyNotFound.Text = "在 story 資料夾中找不到任何故事。" & vbLf & "請將檔案移入 story 再重啟遊戲。"
+            Dim storyTable As New CustomTableLayoutPanel
+            StoryListTitle.Text = "找不到檔案。"
+            storyNotFound.Text = "若要新增故事，請將壓縮檔拖曳到這裡。"
             storyNotFound.TextAlign = ContentAlignment.MiddleCenter
             storyNotFound.Font = New Font(pfc.Families(0), 24)
             storyNotFound.ForeColor = Drawing.Color.White
             storyNotFound.BackColor = Drawing.Color.Transparent
             storyNotFound.AutoSize = True
             storyNotFound.Anchor = AnchorStyles.None
-            storyTable.RowCount = 1
-            storyTable.Controls.Add(storyNotFound, 0, 0)
-        End If
 
+            storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
+            storyTable.Location = center(storyTable)
+            storyTable.RowCount = 1
+
+            storyTable.Controls.Add(storyNotFound, 0, 0)
+            storyTableList.Add(storyTable)
+            storyTableCounter += 1
+        End If
     End Sub
 
     Private Sub ChooseStory()
 
         'If Not supportedImgFormat.Contains(Path.GetExtension(StoryListBG)) Then
         'imgConverter(StoryListBG)
-        'End If
-        'img = Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
+        '= Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
 
         Me.Text = "選擇故事 - Visual Novel Engine"
         Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Zoom
         Me.AllowDrop = True
-        Me.Controls.Add(storyTable)
-        StoryListTitle.Show()
-        setStoryListTitle()
+        Me.Controls.Add(storyTableList(storyTableCurrentIndex))
+        Me.Controls.Add(StoryListTitle)
+        If StoryListTitle.Text <> "找不到檔案。" Then
+            setStoryListTitle()
+        End If
 
     End Sub
 
@@ -377,25 +386,31 @@ Public Class Form1
         If StoryListTitle.Visible Then
             StoryListTitle.Width = Me.Size.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
-            storyTable.Location = New Drawing.Point(Me.Size.Width * 0.1, Me.Size.Height / 5)
-            storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
         End If
 
         If StartLayout.Visible Then
-            StartLayout.Location = New Drawing.Point(Convert.ToInt32(Me.ClientSize.Width / 2 - Me.StartLayout.Width / 2),
-                                       Convert.ToInt32(Me.ClientSize.Height / 2 - Me.StartLayout.Height / 2))
+            StartLayout.Location = center(StartLayout)
         End If
 
         '視窗從最小化後恢復
-        If Me.WindowState <> FormWindowState.Minimized And Not StoryListTitle.Visible And Not StartLayout.Visible Then
+        If Me.WindowState <> FormWindowState.Minimized And storyTableCounter And Not StoryListTitle.Visible Then
             StoryListTitle.Width = Me.Size.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
             StoryListTitle.Show()
-            setStoryListTitle()
+            If StoryListTitle.Text <> "找不到檔案。" Then
+                setStoryListTitle()
+            End If
+            storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
+        ElseIf Me.WindowState <> FormWindowState.Minimized And storyTableCounter Then
+            storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
         End If
 
-        If Me.WindowState <> FormWindowState.Minimized And Not Start.Visible And Not StoryListTitle.Visible Then
+        If Me.WindowState = FormWindowState.Minimized Then
+            StoryListTitle.Hide()
+        End If
+
+        If Me.WindowState <> FormWindowState.Minimized And Not Start.Visible And Not Me.Controls.Contains(StoryListTitle) Then
             Start.Show()
             StartColorCycle()
         End If
