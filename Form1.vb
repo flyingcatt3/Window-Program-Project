@@ -128,8 +128,6 @@ Public Class Form1
             End Sub)
     End Sub
 
-
-
     Private Sub Form1_Load() Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
