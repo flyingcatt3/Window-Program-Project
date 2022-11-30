@@ -7,8 +7,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
-    <AssemblyVersion>2022.11.22.0</AssemblyVersion>
-    <FileVersion>2022.11.22.0</FileVersion>
+    <AssemblyVersion>2022.11.30.0</AssemblyVersion>
+    <FileVersion>2022.11.30.0</FileVersion>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 

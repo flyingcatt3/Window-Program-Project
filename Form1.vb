@@ -6,7 +6,8 @@ Imports System.Threading
 
 Public Class Form1
 
-    Public Class CustomTableLayoutPanel
+    Public Class StoryTableLayoutPanel
+
         Inherits TableLayoutPanel
 
         Public Sub New()
@@ -19,7 +20,21 @@ Public Class Form1
             RowCount = 2
             ColumnCount = 1
             Anchor = AnchorStyles.None
-            SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+        End Sub
+
+    End Class
+
+    Public Class fadePanel
+
+        Inherits Panel
+
+        Public Sub New()
+            DoubleBuffered = True
+            'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+            Margin = New Padding(0, 0, 0, 0)
+            Padding = New Padding(0, 0, 0, 0)
+            BackColor = Drawing.Color.Transparent
+            Dock = DockStyle.Fill
         End Sub
 
     End Class
@@ -39,6 +54,7 @@ Public Class Form1
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
+    Dim fadeScreen As New fadePanel
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -126,12 +142,14 @@ Public Class Form1
                 Loop
 
             End Sub)
+
     End Sub
 
     Private Sub Form1_Load() Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
         'DoubleBuffered = True
+        'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
 
         '開場音樂
         For Each foundFile As String In My.Computer.FileSystem.GetFiles(gamePath + "startBGM")
@@ -147,19 +165,15 @@ Public Class Form1
         mediaPlayer.Play()
 
         '格式設定
-
-        Me.Width = Screen.PrimaryScreen.Bounds.Width * 0.98
-        Me.Height = Screen.PrimaryScreen.Bounds.Width * 0.42
+        Me.ClientSize = New Drawing.Size(Screen.PrimaryScreen.Bounds.Width * 0.98, Screen.PrimaryScreen.Bounds.Width * 0.42)
+        Me.StartLayout.Width = Me.ClientSize.Width / 2
+        Me.StartLayout.Height = Me.ClientSize.Height / 3 * 2
         tmpWindowSize = Me.Size
-        Start.FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
-        Start.FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
+        'Me.StartLayout.Show()
+        'Me.BackgroundImage = Bitmap.FromFile(StoryListBG, Drawing.Imaging.PixelFormat.Format32bppPArgb)
+        'Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         AddHandler Start.Click, AddressOf ButtonClick
         AddHandler Start.GotFocus, AddressOf ButtonCursor
-
-        StartLayout.Location = center(StartLayout)
-
-        ver.Text = "Version" + Today.ToString("  yyyyMMdd")
-        ver.BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
 
         pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
 
@@ -176,36 +190,30 @@ Public Class Form1
 
     Private Async Sub fadeStartLayout() Handles Start.Click
 
-        Dim startBorderA As Integer = Start.FlatAppearance.BorderColor.A
-        Dim startBorderR As Integer = Start.FlatAppearance.BorderColor.R
-        Dim startBorderG As Integer = Start.FlatAppearance.BorderColor.G
-        Dim startBorderB As Integer = Start.FlatAppearance.BorderColor.B
-        Dim meA As Integer = Me.BackColor.A
-        Dim meR As Integer = Me.BackColor.R
-        Dim meG As Integer = Me.BackColor.G
-        Dim meB As Integer = Me.BackColor.B
-
-        ver.Dispose()
         Start.Enabled = False
-        Start.Text = ""
+
+        Me.Controls.Add(fadeScreen)
 
         Await Task.Run(
             Sub()
-                While startBorderR Or startBorderG Or startBorderB Or meR Or meG Or meB
-                    If meR Then meR -= 1
-                    If meG Then meG -= 1
-                    If meB Then meB -= 1
-                    If startBorderR Then startBorderR -= 1
-                    If startBorderG Then startBorderG -= 1
-                    If startBorderB Then startBorderB -= 1
-                    setclr(Me, meA, meR, meG, meB, 0, 1)
-                    setclr(Start, startBorderA, startBorderR, startBorderG, startBorderB, 2, 0)
-                    'ver.Text = startR.ToString() + " / " + startG.ToString() + " / " + startB.ToString()
+                Dim fadeColor = fadeScreen.BackColor.A
+                'StartLayout.BringToFront()
+                fadeScreen.BringToFront()
+                fadeScreen.BackColor = Drawing.Color.FromArgb(0, 0, 0, 0)
+                'Me.Refresh()
+                'fadeTitleScreen.Refresh()
+                While CBool(255 - fadeColor)
+                    fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                    fadeColor += 1
+                    Thread.Sleep(1)
                 End While
             End Sub)
 
+        ver.Dispose()
         StartLayout.Dispose()
+        fadeScreen.Dispose()
         ChooseStory()
+
     End Sub
 
     'https://stackoverflow.com/questions/48710165/back-colour-of-button-not-changing-when-updated-in-for-loop
@@ -297,7 +305,7 @@ Public Class Form1
         For Each foundDir As String In My.Computer.FileSystem.GetDirectories(storyPath)
 
             Dim dirInfo As New System.IO.DirectoryInfo(foundDir)
-            Dim storyTable As New CustomTableLayoutPanel
+            Dim storyTable As New StoryTableLayoutPanel
             Dim storyName As New Label
             Dim storyBtn As New Button
 
@@ -340,7 +348,7 @@ Public Class Form1
         'If story don't exist in storyPath...
         If Not CBool(storyTableCounter) Then
             Dim storyNotFound As New Label
-            Dim storyTable As New CustomTableLayoutPanel
+            Dim storyTable As New StoryTableLayoutPanel
             StoryListTitle.Text = "找不到檔案。"
             storyNotFound.Text = "若要新增故事，請將壓縮檔拖曳到這裡。"
             storyNotFound.TextAlign = ContentAlignment.MiddleCenter
@@ -367,6 +375,7 @@ Public Class Form1
         '= Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
 
         Me.Text = "選擇故事 - Visual Novel Engine"
+        Me.BackColor = Drawing.Color.Black
         Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Zoom
         Me.AllowDrop = True
@@ -382,11 +391,13 @@ Public Class Form1
     Private Sub ControlLayout(sender As Object, e As EventArgs) Handles Me.Resize
 
         If StoryListTitle.Visible Then
-            StoryListTitle.Width = Me.Size.Width
+            StoryListTitle.Width = Me.ClientSize.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
         End If
 
         If StartLayout.Visible Then
+            StartLayout.Width = Me.ClientSize.Width / 2
+            StartLayout.Height = Me.ClientSize.Height / 3 * 2
             StartLayout.Location = center(StartLayout)
         End If
 
@@ -428,7 +439,22 @@ Public Class Form1
     End Sub
 
     Private Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
-        Dim DragFilePath As String = CType(e.Data.GetData("FileNameW"), Array).GetValue(0)
+        Dim files() As String = e.Data.GetData(DataFormats.FileDrop)
+        Dim errFiles As New List(Of String)
+        Dim errFilesMsg As String = Nothing
+        For Each file As String In files
+            'MsgBox(Path.GetFullPath(file))
+            If Path.GetExtension(file) <> ".zip" Then
+                errFiles.Add(vbCrLf)
+                errFiles.Add(Path.GetFullPath(file))
+            End If
+        Next
+        For Each errFile As String In errFiles
+            errFilesMsg &= errFile
+        Next
+        If CBool(errFiles.Capacity) Then
+            MsgBox("處理下列檔案發生錯誤： " & vbCrLf & errFilesMsg & vbCrLf & vbCrLf & "因為這些檔案不是.zip格式。", vbCritical, "Error")
+        End If
         'MsgBox(DragFilePath)
     End Sub
 
