@@ -3,6 +3,7 @@ Imports System.Drawing.Text
 Imports System.IO
 Imports LibVLCSharp.Shared
 Imports System.Threading
+Imports System.IO.Compression
 
 Public Class Form1
 
@@ -49,12 +50,13 @@ Public Class Form1
     ReadOnly libvlc = New LibVLC("--role=music", "--aout=mmedevice", "--mmdevice-backend=wasapi")
     Dim startBGM As New List(Of String)()
     Dim storyTableList As New List(Of TableLayoutPanel)()
-    Dim storyTableCounter As Integer = 0
     Dim storyTableCurrentIndex As Integer = 0
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
     Dim fadeScreen As New fadePanel
+    Dim isStoryListEmpty As Boolean
+    Dim isLoadingStory As Boolean
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -75,8 +77,9 @@ Public Class Form1
     End Function
 
     Public Function imgConverter(img As String)
-        ImageExtensions.SaveAsJpeg(Image.Load(img), converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg")
-        Return converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg"
+        Dim p = converted_imgPath + Path.GetFileNameWithoutExtension(img) + ".jpg"
+        ImageExtensions.SaveAsJpeg(Image.Load(img), p)
+        Return p
     End Function
 
     Public Function center(ctrl As Control)
@@ -122,6 +125,7 @@ Public Class Form1
 
     Async Sub setStoryListTitle()
         Dim txt = "選擇故事_"
+        StoryListTitle.Text = ""
 
         Await Task.Run(
             Sub()
@@ -131,7 +135,7 @@ Public Class Form1
                 Next
 
                 Do While StoryListTitle.Visible
-                    If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
+                    If Me.WindowState <> FormWindowState.Minimized And Not resizing And Not isLoadingStory Then
                         StoryListTitle.Text = StoryListTitle.Text.Remove(4)
                         Thread.Sleep(100)
                         StoryListTitle.Text &= txt(4)
@@ -143,6 +147,9 @@ Public Class Form1
 
             End Sub)
 
+        If isLoadingStory Then
+            StoryListTitle.Text = "Loading..."
+        End If
     End Sub
 
     Private Sub Form1_Load() Handles MyBase.Load
@@ -168,6 +175,7 @@ Public Class Form1
         Me.ClientSize = New Drawing.Size(Screen.PrimaryScreen.Bounds.Width * 0.98, Screen.PrimaryScreen.Bounds.Width * 0.42)
         Me.StartLayout.Width = Me.ClientSize.Width / 2
         Me.StartLayout.Height = Me.ClientSize.Height / 3 * 2
+        Me.ver.Text = "v" + Today.ToString("yyyyMMdd")
         tmpWindowSize = Me.Size
         'Me.StartLayout.Show()
         'Me.BackgroundImage = Bitmap.FromFile(StoryListBG, Drawing.Imaging.PixelFormat.Format32bppPArgb)
@@ -291,16 +299,7 @@ Public Class Form1
         sender.Cursor = Cursors.Hand
     End Sub
 
-    Private Sub ChooseStory_PreLoad()
-
-        StoryListTitle.Anchor = Drawing.ContentAlignment.MiddleLeft
-        StoryListTitle.TextAlign = Drawing.ContentAlignment.MiddleLeft
-        StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
-        StoryListTitle.ForeColor = Drawing.Color.White
-        StoryListTitle.BackColor = Drawing.Color.FromArgb(120, 0, 0, 0)
-        StoryListTitle.Width = Me.Size.Width
-        StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
-        StoryListTitle.Text = ""
+    Sub loadStory()
 
         For Each foundDir As String In My.Computer.FileSystem.GetDirectories(storyPath)
 
@@ -341,14 +340,28 @@ Public Class Form1
             storyTable.Controls.Add(storyBtn, 0, 0)
             storyTable.Controls.Add(storyName, 0, 1)
             storyTableList.Add(storyTable)
-
-            storyTableCounter += 1
+            'MsgBox("Added to storyTableList")
         Next
+    End Sub
+
+    Private Sub ChooseStory_PreLoad()
+
+        StoryListTitle.Anchor = Drawing.ContentAlignment.MiddleLeft
+        StoryListTitle.TextAlign = Drawing.ContentAlignment.MiddleLeft
+        StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
+        StoryListTitle.ForeColor = Drawing.Color.White
+        StoryListTitle.BackColor = Drawing.Color.FromArgb(120, 0, 0, 0)
+        StoryListTitle.Width = Me.Size.Width
+        StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
+        StoryListTitle.Text = ""
+
+        loadStory()
 
         'If story don't exist in storyPath...
-        If Not CBool(storyTableCounter) Then
+        If Not CBool(storyTableList.Count) Then
             Dim storyNotFound As New Label
             Dim storyTable As New StoryTableLayoutPanel
+            isStoryListEmpty = Not CBool(storyTableList.Count)
             StoryListTitle.Text = "找不到檔案。"
             storyNotFound.Text = "若要新增故事，請將壓縮檔拖曳到這裡。"
             storyNotFound.TextAlign = ContentAlignment.MiddleCenter
@@ -358,13 +371,12 @@ Public Class Form1
             storyNotFound.AutoSize = True
             storyNotFound.Anchor = AnchorStyles.None
 
-            storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
+            storyTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Height * 0.6)
             storyTable.Location = center(storyTable)
             storyTable.RowCount = 1
 
             storyTable.Controls.Add(storyNotFound, 0, 0)
             storyTableList.Add(storyTable)
-            storyTableCounter += 1
         End If
     End Sub
 
@@ -402,7 +414,7 @@ Public Class Form1
         End If
 
         '視窗從最小化後恢復
-        If Me.WindowState <> FormWindowState.Minimized And storyTableCounter And Not StoryListTitle.Visible Then
+        If Me.WindowState <> FormWindowState.Minimized And storyTableList.Count And Not StoryListTitle.Visible Then
             StoryListTitle.Width = Me.Size.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
@@ -411,7 +423,7 @@ Public Class Form1
                 setStoryListTitle()
             End If
             storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
-        ElseIf Me.WindowState <> FormWindowState.Minimized And storyTableCounter Then
+        ElseIf Me.WindowState <> FormWindowState.Minimized And storyTableList.Count Then
             storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
         End If
 
@@ -440,21 +452,58 @@ Public Class Form1
 
     Private Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
         Dim files() As String = e.Data.GetData(DataFormats.FileDrop)
+        Dim filesList As New List(Of String)
         Dim errFiles As New List(Of String)
         Dim errFilesMsg As String = Nothing
+
+        isLoadingStory = True
+
         For Each file As String In files
             'MsgBox(Path.GetFullPath(file))
             If Path.GetExtension(file) <> ".zip" Then
                 errFiles.Add(vbCrLf)
                 errFiles.Add(Path.GetFullPath(file))
+            Else
+                filesList.Add(Path.GetFullPath(file))
             End If
         Next
+
         For Each errFile As String In errFiles
             errFilesMsg &= errFile
         Next
-        If CBool(errFiles.Capacity) Then
+        If CBool(errFiles.Count) Then
             MsgBox("處理下列檔案發生錯誤： " & vbCrLf & errFilesMsg & vbCrLf & vbCrLf & "因為這些檔案不是.zip格式。", vbCritical, "Error")
         End If
+        'Check if the file is encrypted or broken.
+
+        'Unzip files.
+
+        For Each zipPath In filesList
+            'MsgBox(zipPath)
+            Dim extractPath = storyPath + Path.GetFileNameWithoutExtension(zipPath)
+            My.Computer.FileSystem.CreateDirectory(extractPath)
+            'MsgBox(filesList.Count)
+            Try
+                ZipFile.ExtractToDirectory(zipPath, extractPath, True)
+            Catch ex As Exception
+                MsgBox(ex.ToString())
+            End Try
+        Next
+
+        If CBool(filesList.Count) Then
+            storyTableList(0).Dispose()
+            storyTableList.RemoveAt(0)
+            loadStory()
+            Me.Controls.Add(storyTableList(storyTableCurrentIndex))
+            If isStoryListEmpty Then
+                setStoryListTitle()
+                isStoryListEmpty = False
+            End If
+        End If
+
+        isLoadingStory = False
+
+        'MsgBox(filesList.Count)
         'MsgBox(DragFilePath)
     End Sub
 

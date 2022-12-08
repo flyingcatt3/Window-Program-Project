@@ -1596,11 +1596,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jones\\OneDrive\\桌面\\Window-Program-Project\\WinFormsApp1.vbproj",
+      "projectUniqueName": "C:\\Users\\jones\\OneDrive\\桌面\\視窗程設專案\\Window-Program-Project\\WinFormsApp1.vbproj",
       "projectName": "WinFormsApp1",
-      "projectPath": "C:\\Users\\jones\\OneDrive\\桌面\\Window-Program-Project\\WinFormsApp1.vbproj",
+      "projectPath": "C:\\Users\\jones\\OneDrive\\桌面\\視窗程設專案\\Window-Program-Project\\WinFormsApp1.vbproj",
       "packagesPath": "C:\\Users\\jones\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jones\\OneDrive\\桌面\\Window-Program-Project\\obj\\",
+      "outputPath": "C:\\Users\\jones\\OneDrive\\桌面\\視窗程設專案\\Window-Program-Project\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\jones\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -119,7 +119,7 @@ Partial Class Form1
         Me.ver.Name = "ver"
         Me.ver.Size = New System.Drawing.Size(98, 23)
         Me.ver.TabIndex = 3
-        Me.ver.Text = Today.ToString("yyyyMMdd")
+        Me.ver.Text = "<lastCompilationDate>"
         Me.ver.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
         'Form1

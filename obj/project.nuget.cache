@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "7TZcpA7rFYO398Ww+e64wKKO6SmOHIkXFKgRTLHOV74iY/nFapGOpPQujxAjz0oQsUkXUTBPB1OUMdGNvpsDRg==",
+  "dgSpecHash": "kFM0XCk4EMlmgm97pla97qKQLdfE9QN5pvrw6YKZwBzq5CCW/JoufaXC8W6S7+jqMxGuIOcoENnZBsWkzt+dDg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\jones\\OneDrive\\桌面\\Window-Program-Project\\WinFormsApp1.vbproj",
+  "projectFilePath": "C:\\Users\\jones\\OneDrive\\桌面\\視窗程設專案\\Window-Program-Project\\WinFormsApp1.vbproj",
   "expectedPackageFiles": [
     "C:\\Users\\jones\\.nuget\\packages\\libvlcsharp\\3.6.7\\libvlcsharp.3.6.7.nupkg.sha512",
     "C:\\Users\\jones\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
