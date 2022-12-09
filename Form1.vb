@@ -461,7 +461,7 @@ Public Class Form1
                 For Each file As String In files
                     'MsgBox(Path.GetFullPath(file))
                     If Path.GetExtension(file) <> ".zip" Then
-                        errFilesMsg.Add(Path.GetFullPath(file) & vbCrLf & vbCrLf & " - 該檔案的副檔名不是.zip。" & vbCrLf)
+                        errFilesMsg.Add(Path.GetFullPath(file) & vbCrLf & " - 該檔案的副檔名不是.zip。" & vbCrLf & vbCrLf)
                     Else
                         filesList.Add(Path.GetFullPath(file))
                     End If
@@ -479,9 +479,9 @@ Public Class Form1
                         My.Computer.FileSystem.DeleteDirectory(extractPath, FileIO.UIOption.OnlyErrorDialogs, FileIO.RecycleOption.DeletePermanently)
                         Select Case ex.GetType()
                             Case GetType(IOException)
-                                errFilesMsg.Add(zipPath & vbCrLf & vbCrLf & " - 無法讀取，因為硬碟空間不足。" & vbCrLf)
+                                errFilesMsg.Add(zipPath & vbCrLf & " - 硬碟空間不足。" & vbCrLf & vbCrLf)
                             Case GetType(InvalidDataException)
-                                errFilesMsg.Add(zipPath & vbCrLf & vbCrLf & " - 無法讀取，因為該檔案損毀或檔案格式不正確。" & vbCrLf)
+                                errFilesMsg.Add(zipPath & vbCrLf & " - 該檔案損毀、被加密或檔案格式不正確。" & vbCrLf & vbCrLf)
                         End Select
                         'MsgBox(ex.ToString())
                     End Try
