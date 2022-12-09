@@ -4,6 +4,7 @@ Imports System.IO
 Imports LibVLCSharp.Shared
 Imports System.Threading
 Imports System.IO.Compression
+Imports System.Reflection
 
 Public Class Form1
 
@@ -150,7 +151,7 @@ Public Class Form1
             End Sub)
     End Sub
 
-    Private Sub Form1_Load() Handles MyBase.Load
+    Private Sub GameLoad() Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
         'DoubleBuffered = True
@@ -173,7 +174,7 @@ Public Class Form1
         Me.ClientSize = New Drawing.Size(Screen.PrimaryScreen.Bounds.Width * 0.98, Screen.PrimaryScreen.Bounds.Width * 0.42)
         Me.StartLayout.Width = Me.ClientSize.Width / 2
         Me.StartLayout.Height = Me.ClientSize.Height / 3 * 2
-        Me.ver.Text = "v" + Today.ToString("yyyyMMdd")
+        Me.ver.Text = "v" + System.IO.File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location).ToString("yyyyMMdd")
         tmpWindowSize = Me.Size
         'Me.StartLayout.Show()
         'Me.BackgroundImage = Bitmap.FromFile(StoryListBG, Drawing.Imaging.PixelFormat.Format32bppPArgb)
