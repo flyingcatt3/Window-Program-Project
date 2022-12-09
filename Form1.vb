@@ -162,7 +162,7 @@ Public Class Form1
             startBGM.Add(foundFile)
         Next
 
-        Dim file As String = startBGM(GetRandom(0, startBGM.Capacity - 1))
+        Dim file As String = startBGM(GetRandom(0, startBGM.Count - 1))
         Dim media = New Media(libvlc_repeat, file)
         Dim mediaPlayer = New MediaPlayer(media)
 
@@ -186,8 +186,6 @@ Public Class Form1
 
         Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
         GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
-
-        'StoryListTitle.Hide()
 
         Me.CenterToScreen()
         StartColorCycle()
