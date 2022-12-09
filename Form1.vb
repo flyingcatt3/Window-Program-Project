@@ -130,26 +130,24 @@ Public Class Form1
         Await Task.Run(
             Sub()
 
-                For x = 0 To 4
+                For x = 0 To txt.Length - 1
                     StoryListTitle.Text &= txt(x)
                 Next
 
-                Do While StoryListTitle.Visible
-                    If Me.WindowState <> FormWindowState.Minimized And Not resizing And Not isLoadingStory Then
-                        StoryListTitle.Text = StoryListTitle.Text.Remove(4)
+                Do While StoryListTitle.Visible And Not isLoadingStory
+                    If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
+                        StoryListTitle.Text = StoryListTitle.Text.Remove(txt.Length - 1)
                         Thread.Sleep(100)
-                        StoryListTitle.Text &= txt(4)
+                        StoryListTitle.Text &= txt(txt.Length - 1)
                         Thread.Sleep(100)
                     ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
                     End If
                 Loop
-
+                If isLoadingStory Then
+                    StoryListTitle.Text = "Loading..."
+                End If
             End Sub)
-
-        If isLoadingStory Then
-            StoryListTitle.Text = "Loading..."
-        End If
     End Sub
 
     Private Sub Form1_Load() Handles MyBase.Load
@@ -450,61 +448,66 @@ Public Class Form1
         resizing = False
     End Sub
 
-    Private Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
+    Private Async Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
         Dim files() As String = e.Data.GetData(DataFormats.FileDrop)
         Dim filesList As New List(Of String)
-        Dim errFiles As New List(Of String)
-        Dim errFilesMsg As String = Nothing
+        Dim errFilesMsg As New List(Of String)
 
         isLoadingStory = True
 
-        For Each file As String In files
-            'MsgBox(Path.GetFullPath(file))
-            If Path.GetExtension(file) <> ".zip" Then
-                errFiles.Add(vbCrLf)
-                errFiles.Add(Path.GetFullPath(file))
-            Else
-                filesList.Add(Path.GetFullPath(file))
-            End If
-        Next
+        errFilesMsg.Add("處理下列檔案時發生錯誤：" & vbCrLf & vbCrLf)
 
-        For Each errFile As String In errFiles
-            errFilesMsg &= errFile
-        Next
-        If CBool(errFiles.Count) Then
-            MsgBox("處理下列檔案發生錯誤： " & vbCrLf & errFilesMsg & vbCrLf & vbCrLf & "因為這些檔案不是.zip格式。", vbCritical, "Error")
-        End If
-        'Check if the file is encrypted or broken.
+        Await Task.Run(
+            Sub()
+                For Each file As String In files
+                    'MsgBox(Path.GetFullPath(file))
+                    If Path.GetExtension(file) <> ".zip" Then
+                        errFilesMsg.Add(Path.GetFullPath(file) & vbCrLf & vbCrLf & " - 該檔案的副檔名不是.zip。" & vbCrLf)
+                    Else
+                        filesList.Add(Path.GetFullPath(file))
+                    End If
+                Next
 
-        'Unzip files.
+                For Each zipPath In filesList
+                    'MsgBox(zipPath)
+                    'MsgBox(filesList.Count)
+                    Dim extractPath = storyPath + Path.GetFileNameWithoutExtension(zipPath)
+                    My.Computer.FileSystem.CreateDirectory(extractPath)
 
-        For Each zipPath In filesList
-            'MsgBox(zipPath)
-            Dim extractPath = storyPath + Path.GetFileNameWithoutExtension(zipPath)
-            My.Computer.FileSystem.CreateDirectory(extractPath)
-            'MsgBox(filesList.Count)
-            Try
-                ZipFile.ExtractToDirectory(zipPath, extractPath, True)
-            Catch ex As Exception
-                MsgBox(ex.ToString())
-            End Try
-        Next
+                    Try
+                        ZipFile.ExtractToDirectory(zipPath, extractPath, True)
+                    Catch ex As Exception
+                        My.Computer.FileSystem.DeleteDirectory(extractPath, FileIO.UIOption.OnlyErrorDialogs, FileIO.RecycleOption.DeletePermanently)
+                        Select Case ex.GetType()
+                            Case GetType(IOException)
+                                errFilesMsg.Add(zipPath & vbCrLf & vbCrLf & " - 無法讀取，因為硬碟空間不足。" & vbCrLf)
+                            Case GetType(InvalidDataException)
+                                errFilesMsg.Add(zipPath & vbCrLf & vbCrLf & " - 無法讀取，因為該檔案損毀或檔案格式不正確。" & vbCrLf)
+                        End Select
+                        'MsgBox(ex.ToString())
+                    End Try
+                Next
+                If errFilesMsg.Count > 1 Then
+                    Dim str As String = Nothing
+                    For Each msg In errFilesMsg
+                        str &= msg
+                    Next
+                    MsgBox(str, vbCritical, "Error")
+                End If
 
-        If CBool(filesList.Count) Then
+            End Sub)
+
+        If CBool(filesList.Count) And isStoryListEmpty Then
             storyTableList(0).Dispose()
             storyTableList.RemoveAt(0)
             loadStory()
             Me.Controls.Add(storyTableList(storyTableCurrentIndex))
-            If isStoryListEmpty Then
-                setStoryListTitle()
-                isStoryListEmpty = False
-            End If
+            isStoryListEmpty = False
+        ElseIf CBool(filesList.Count) Then
+            loadStory()
         End If
-
         isLoadingStory = False
-
-        'MsgBox(filesList.Count)
-        'MsgBox(DragFilePath)
+        setStoryListTitle()
     End Sub
 
     Private Sub FileDragEnter(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragEnter
