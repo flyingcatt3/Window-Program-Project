@@ -56,7 +56,7 @@ Public Class Form1
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
     Dim fadeScreen As New fadePanel
-    Dim isStoryListEmpty As Boolean
+    Dim isStoryListEmpty As Boolean = False
     Dim isLoadingStory As Boolean
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
@@ -145,6 +145,7 @@ Public Class Form1
                         StoryListTitle.Hide()
                     End If
                 Loop
+
                 If isLoadingStory Then
                     StoryListTitle.Text = "Loading..."
                 End If
@@ -305,17 +306,17 @@ Public Class Form1
             Dim storyName As New Label
             Dim storyBtn As New Button
 
+            storyTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
+            storyTable.Location = center(storyTable)
+
             storyName.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
             storyName.Text = dirInfo.Name
             'MsgBox(storyName.Text)
             storyName.ForeColor = Drawing.Color.White
             storyName.BackColor = Drawing.Color.Transparent
-            storyName.Size = New Drawing.Size(Me.Size.Width * 0.8, 150)
+            storyName.Size = New Drawing.Size(storyTable.Width, storyTable.Height / 3)
             storyName.TextAlign = Drawing.ContentAlignment.MiddleCenter
             storyName.Anchor = AnchorStyles.Bottom
-
-            storyTable.Size = New Drawing.Size(Me.Size.Width * 0.8, Me.Size.Height * 0.6)
-            storyTable.Location = center(storyTable)
 
             storyBtn.Anchor = AnchorStyles.Top
             storyBtn.BackColor = Drawing.Color.Transparent
@@ -324,8 +325,9 @@ Public Class Form1
             storyBtn.FlatAppearance.BorderSize = 0
             storyBtn.FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
             storyBtn.FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
-            storyBtn.Size = New Drawing.Size(storyTable.Width, storyTable.Height - 210)
+            storyBtn.Size = New Drawing.Size(storyTable.Width, storyName.Height * 2)
             storyBtn.BackgroundImageLayout = ImageLayout.Zoom
+
             If File.Exists(foundDir + "\logo.png") Then
                 storyBtn.BackgroundImage = Drawing.Image.FromFile(foundDir + "\logo.png")
             Else
@@ -345,10 +347,10 @@ Public Class Form1
 
         StoryListTitle.Anchor = Drawing.ContentAlignment.MiddleLeft
         StoryListTitle.TextAlign = Drawing.ContentAlignment.MiddleLeft
-        StoryListTitle.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
+        StoryListTitle.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
         StoryListTitle.ForeColor = Drawing.Color.White
         StoryListTitle.BackColor = Drawing.Color.FromArgb(120, 0, 0, 0)
-        StoryListTitle.Width = Me.Size.Width
+        StoryListTitle.Width = Me.ClientSize.Width
         StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
         StoryListTitle.Text = ""
 
@@ -358,8 +360,10 @@ Public Class Form1
         If Not CBool(storyTableList.Count) Then
             Dim storyNotFound As New Label
             Dim storyTable As New StoryTableLayoutPanel
-            isStoryListEmpty = Not CBool(storyTableList.Count)
+
+            isStoryListEmpty = True
             StoryListTitle.Text = "找不到檔案。"
+
             storyNotFound.Text = "若要新增故事，請將壓縮檔拖曳到這裡。"
             storyNotFound.TextAlign = ContentAlignment.MiddleCenter
             storyNotFound.Font = New Font(pfc.Families(0), 24)
@@ -390,7 +394,7 @@ Public Class Form1
         Me.AllowDrop = True
         Me.Controls.Add(storyTableList(storyTableCurrentIndex))
         Me.Controls.Add(StoryListTitle)
-        If StoryListTitle.Text <> "找不到檔案。" Then
+        If Not isStoryListEmpty Then
             setStoryListTitle()
         End If
 
@@ -402,6 +406,11 @@ Public Class Form1
         If StoryListTitle.Visible Then
             StoryListTitle.Width = Me.ClientSize.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
+            For Each table In storyTableList
+                table.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
+                table.Controls.Item(1).Size = New Drawing.Size(table.Width, table.Height / 3)
+                table.Controls.Item(0).Size = New Drawing.Size(table.Width, table.Controls.Item(1).Height * 2)
+            Next
         End If
 
         If StartLayout.Visible Then
@@ -412,7 +421,7 @@ Public Class Form1
 
         '視窗從最小化後恢復
         If Me.WindowState <> FormWindowState.Minimized And storyTableList.Count And Not StoryListTitle.Visible Then
-            StoryListTitle.Width = Me.Size.Width
+            StoryListTitle.Width = Me.ClientSize.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
             StoryListTitle.Show()
@@ -481,11 +490,12 @@ Public Class Form1
                             Case GetType(IOException)
                                 errFilesMsg.Add(zipPath & vbCrLf & " - 硬碟空間不足。" & vbCrLf & vbCrLf)
                             Case GetType(InvalidDataException)
-                                errFilesMsg.Add(zipPath & vbCrLf & " - 該檔案損毀、被加密或檔案格式不正確。" & vbCrLf & vbCrLf)
+                                errFilesMsg.Add(zipPath & vbCrLf & " - 該檔案損毀、被加密或檔案格式與附檔名不相符。" & vbCrLf & vbCrLf)
                         End Select
                         'MsgBox(ex.ToString())
                     End Try
                 Next
+
                 If errFilesMsg.Count > 1 Then
                     Dim str As String = Nothing
                     For Each msg In errFilesMsg
@@ -500,11 +510,12 @@ Public Class Form1
             storyTableList(0).Dispose()
             storyTableList.RemoveAt(0)
             loadStory()
-            Me.Controls.Add(storyTableList(storyTableCurrentIndex))
             isStoryListEmpty = False
+            Me.Controls.Add(storyTableList(storyTableCurrentIndex))
         ElseIf CBool(filesList.Count) Then
             loadStory()
         End If
+
         isLoadingStory = False
         setStoryListTitle()
     End Sub
@@ -512,7 +523,6 @@ Public Class Form1
     Private Sub FileDragEnter(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragEnter
         e.Effect = DragDropEffects.All
     End Sub
-
 
     'Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
 
