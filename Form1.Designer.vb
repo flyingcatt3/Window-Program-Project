@@ -117,7 +117,7 @@ Partial Class Form1
         Me.ver.Location = New System.Drawing.Point(1573, 688)
         Me.ver.Margin = New System.Windows.Forms.Padding(0)
         Me.ver.Name = "ver"
-        Me.ver.Size = New System.Drawing.Size(98, 23)
+        Me.ver.Size = New System.Drawing.Size(241, 23)
         Me.ver.TabIndex = 3
         Me.ver.Text = "<lastCompilationDate>"
         Me.ver.TextAlign = System.Drawing.ContentAlignment.MiddleRight

@@ -5,6 +5,7 @@ Imports LibVLCSharp.Shared
 Imports System.Threading
 Imports System.IO.Compression
 Imports System.Reflection
+Imports System.Xml
 
 Public Class Form1
 
@@ -41,16 +42,41 @@ Public Class Form1
 
     End Class
 
+    Public Class switchStoryBtn
+        Inherits Button
+
+        Public Sub New()
+            DoubleBuffered = True
+            BackColor = Drawing.Color.FromArgb(100, 0, 0, 0)
+            ForeColor = Drawing.Color.White
+            Font = New Drawing.Font("Taipei Sans TC Beta", 36.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point)
+            FlatStyle = FlatStyle.Flat
+            FlatAppearance.BorderSize = 0
+            FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 255, 255, 255)
+            FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(100, 255, 255, 255)
+        End Sub
+    End Class
+
+    Public Class dbBtn
+        Inherits Button
+
+        Public Sub New()
+            DoubleBuffered = True
+        End Sub
+    End Class
+
     ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
     ReadOnly gamePath = Application.StartupPath
-    ReadOnly storyPath = gamePath + "\story\"
-    ReadOnly converted_imgPath = gamePath + "\converted_imgs\"
+    ReadOnly storyPath = gamePath + "story\"
+    ReadOnly converted_imgPath = gamePath + "converted_imgs\"
     ReadOnly StoryListBG = gamePath + "StoryListBG.jpg"
     ReadOnly Clicksound As String = gamePath + "click.mp3"
+    ReadOnly addStorySound As String = gamePath + "addstory.wav"
     ReadOnly libvlc_repeat = New LibVLC("--role=music", "--input-repeat=65535", "--aout=mmedevice", "--mmdevice-backend=wasapi")
     ReadOnly libvlc = New LibVLC("--role=music", "--aout=mmedevice", "--mmdevice-backend=wasapi")
     Dim startBGM As New List(Of String)()
     Dim storyTableList As New List(Of TableLayoutPanel)()
+    Dim chapterTableList As New List(Of TableLayoutPanel)()
     Dim storyTableCurrentIndex As Integer = 0
     Dim StoryListTitle As New Label()
     Dim tmpWindowSize, resizing
@@ -58,6 +84,10 @@ Public Class Form1
     Dim fadeScreen As New fadePanel
     Dim isStoryListEmpty As Boolean = False
     Dim isLoadingStory As Boolean
+    Dim btnSwitchStoryL As New switchStoryBtn
+    Dim btnSwitchStoryR As New switchStoryBtn
+    Dim tmpStoryLs As New List(Of String)
+    Dim storyLs As New List(Of String)
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -133,22 +163,23 @@ Public Class Form1
 
                 For x = 0 To txt.Length - 1
                     StoryListTitle.Text &= txt(x)
+                    Thread.Sleep(50)
                 Next
 
-                Do While StoryListTitle.Visible And Not isLoadingStory
+                Do While StoryListTitle.Visible
                     If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
-                        StoryListTitle.Text = StoryListTitle.Text.Remove(txt.Length - 1)
-                        Thread.Sleep(100)
-                        StoryListTitle.Text &= txt(txt.Length - 1)
-                        Thread.Sleep(100)
+                        If isLoadingStory Then
+                            StoryListTitle.Text = "Loading..."
+                        Else
+                            StoryListTitle.Text = txt
+                            Thread.Sleep(100)
+                            StoryListTitle.Text = StoryListTitle.Text.Remove(txt.Length - 1)
+                        End If
                     ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
                     End If
+                    Thread.Sleep(100)
                 Loop
-
-                If isLoadingStory Then
-                    StoryListTitle.Text = "Loading..."
-                End If
             End Sub)
     End Sub
 
@@ -168,7 +199,7 @@ Public Class Form1
         Dim mediaPlayer = New MediaPlayer(media)
 
         mediaPlayer.EnableHardwareDecoding = True
-        mediaPlayer.Volume = 70
+        mediaPlayer.Volume = 60
         mediaPlayer.Play()
 
         '格式設定
@@ -299,15 +330,31 @@ Public Class Form1
 
     Sub loadStory()
 
-        For Each foundDir As String In My.Computer.FileSystem.GetDirectories(storyPath)
+        Dim scope
 
+        If tmpStoryLs.Count Then
+            scope = tmpStoryLs
+        Else
+            scope = My.Computer.FileSystem.GetDirectories(storyPath)
+        End If
+
+        storyLs.AddRange(scope)
+
+        For Each foundDir As String In scope
             Dim dirInfo As New System.IO.DirectoryInfo(foundDir)
             Dim storyTable As New StoryTableLayoutPanel
             Dim storyName As New Label
             Dim storyBtn As New Button
+            Dim chapterTable As New StoryTableLayoutPanel
 
             storyTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
             storyTable.Location = center(storyTable)
+            storyTable.Visible = False
+
+            chapterTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
+            chapterTable.Location = center(chapterTable)
+            chapterTable.AutoScroll = True
+            chapterTable.Visible = False
 
             storyName.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
             storyName.Text = dirInfo.Name
@@ -333,12 +380,42 @@ Public Class Form1
             Else
                 storyBtn.BackgroundImage = Drawing.Image.FromFile(gamePath + "Image_not_available.png")
             End If
+
+            For Each ch In My.Computer.FileSystem.GetDirectories(foundDir)
+                Dim chapterBtn As New dbBtn
+                storyTable.Name = ""
+
+                If File.Exists(ch + "\script.txt") Then
+                    Dim dir2Info As New System.IO.DirectoryInfo(ch)
+
+                    chapterBtn.Anchor = AnchorStyles.Top
+                    chapterBtn.BackColor = Drawing.Color.Transparent
+                    chapterBtn.FlatStyle = FlatStyle.Flat
+                    chapterBtn.FlatAppearance.BorderSize = 0
+                    chapterBtn.FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
+                    chapterBtn.FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
+                    chapterBtn.Size = New Drawing.Size(storyTable.Width - storyTable.Padding.Right - storyTable.Padding.Left - chapterBtn.Margin.All * 2, storyTable.Height / 8)
+                    chapterBtn.Text = dir2Info.Name
+                    chapterBtn.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+                    chapterBtn.TextAlign = Drawing.ContentAlignment.MiddleCenter
+
+                    AddHandler chapterBtn.Click, AddressOf ButtonClick
+                    AddHandler chapterBtn.GotFocus, AddressOf ButtonCursor
+
+                    chapterTable.Controls.Add(chapterBtn)
+
+                End If
+            Next
+
+            AddHandler storyBtn.Click, AddressOf storyBtnClick
             AddHandler storyBtn.Click, AddressOf ButtonClick
             AddHandler storyBtn.GotFocus, AddressOf ButtonCursor
 
             storyTable.Controls.Add(storyBtn, 0, 0)
             storyTable.Controls.Add(storyName, 0, 1)
             storyTableList.Add(storyTable)
+            Me.Controls.Add(chapterTable)
+            chapterTableList.Add(chapterTable)
             'MsgBox("Added to storyTableList")
         Next
     End Sub
@@ -372,6 +449,7 @@ Public Class Form1
             storyNotFound.AutoSize = True
             storyNotFound.Anchor = AnchorStyles.None
 
+            storyTable.Visible = False
             storyTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Height * 0.6)
             storyTable.Location = center(storyTable)
             storyTable.RowCount = 1
@@ -392,11 +470,20 @@ Public Class Form1
         Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Zoom
         Me.AllowDrop = True
-        Me.Controls.Add(storyTableList(storyTableCurrentIndex))
+
+        storyTableList(storyTableCurrentIndex).Visible = True
+
+        For Each storytable In storyTableList
+            Me.Controls.Add(storytable)
+        Next
+
         Me.Controls.Add(StoryListTitle)
+
         If Not isStoryListEmpty Then
             setStoryListTitle()
         End If
+
+        btnSwitchStoryAdd()
 
     End Sub
 
@@ -406,11 +493,22 @@ Public Class Form1
         If StoryListTitle.Visible Then
             StoryListTitle.Width = Me.ClientSize.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
-            For Each table In storyTableList
-                table.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
-                table.Controls.Item(1).Size = New Drawing.Size(table.Width, table.Height / 3)
-                table.Controls.Item(0).Size = New Drawing.Size(table.Width, table.Controls.Item(1).Height * 2)
-            Next
+            If Me.WindowState <> FormWindowState.Minimized And storyTableList.Count Then
+                btnSwitchStoryL.Location = New Drawing.Point(Me.ClientSize.Width * 0.025, Convert.ToInt32(Me.ClientSize.Height / 2 - btnSwitchStoryL.Height / 2))
+                btnSwitchStoryR.Location = New Drawing.Point(Me.ClientSize.Width * 0.925, Convert.ToInt32(Me.ClientSize.Height / 2 - btnSwitchStoryR.Height / 2))
+                btnSwitchStoryL.Size = New Drawing.Size(Me.ClientSize.Width * 0.05, Me.ClientSize.Height * 0.2)
+                btnSwitchStoryR.Size = New Drawing.Size(Me.ClientSize.Width * 0.05, Me.ClientSize.Height * 0.2)
+                For Each table In storyTableList
+                    table.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
+                    table.Controls.Item(1).Size = New Drawing.Size(table.Width, table.Height / 3)
+                    table.Controls.Item(0).Size = New Drawing.Size(table.Width, table.Controls.Item(1).Height * 2)
+                    table.Location = center(table)
+                Next
+                For Each table In chapterTableList
+                    table.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
+                    table.Location = center(table)
+                Next
+            End If
         End If
 
         If StartLayout.Visible Then
@@ -425,12 +523,9 @@ Public Class Form1
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
             StoryListTitle.Show()
-            If StoryListTitle.Text <> "找不到檔案。" Then
+            If Not isStoryListEmpty Then
                 setStoryListTitle()
             End If
-            storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
-        ElseIf Me.WindowState <> FormWindowState.Minimized And storyTableList.Count Then
-            storyTableList(storyTableCurrentIndex).Location = center(storyTableList(storyTableCurrentIndex))
         End If
 
         If Me.WindowState = FormWindowState.Minimized Then
@@ -461,6 +556,11 @@ Public Class Form1
         Dim filesList As New List(Of String)
         Dim errFilesMsg As New List(Of String)
 
+        Dim media = New Media(libvlc, addStorySound)
+        Dim mediaplayer = New MediaPlayer(media)
+        mediaplayer.EnableHardwareDecoding = True
+        mediaplayer.Volume = Math.Sqrt(mediaplayer.Volume) * 10
+
         isLoadingStory = True
 
         errFilesMsg.Add("處理下列檔案時發生錯誤：" & vbCrLf & vbCrLf)
@@ -476,9 +576,22 @@ Public Class Form1
                     End If
                 Next
 
+                tmpStoryLs.AddRange(filesList)
+
                 For Each zipPath In filesList
                     'MsgBox(zipPath)
                     'MsgBox(filesList.Count)
+
+                    For Each foundDir As String In My.Computer.FileSystem.GetDirectories(storyPath)
+                        Dim dirInfo As New System.IO.DirectoryInfo(foundDir)
+                        Dim dirName = dirInfo.Name
+
+                        If Path.GetFileNameWithoutExtension(zipPath) = dirName Then
+                            tmpStoryLs.Remove(zipPath)
+                            errFilesMsg.Add(zipPath & vbCrLf & " - 遊戲目錄內已經有同名的檔案。" & vbCrLf & vbCrLf)
+                        End If
+                    Next
+
                     Dim extractPath = storyPath + Path.GetFileNameWithoutExtension(zipPath)
                     My.Computer.FileSystem.CreateDirectory(extractPath)
 
@@ -488,12 +601,15 @@ Public Class Form1
                         My.Computer.FileSystem.DeleteDirectory(extractPath, FileIO.UIOption.OnlyErrorDialogs, FileIO.RecycleOption.DeletePermanently)
                         Select Case ex.GetType()
                             Case GetType(IOException)
+                                tmpStoryLs.Remove(zipPath)
                                 errFilesMsg.Add(zipPath & vbCrLf & " - 硬碟空間不足。" & vbCrLf & vbCrLf)
                             Case GetType(InvalidDataException)
+                                tmpStoryLs.Remove(zipPath)
                                 errFilesMsg.Add(zipPath & vbCrLf & " - 該檔案損毀、被加密或檔案格式與附檔名不相符。" & vbCrLf & vbCrLf)
                         End Select
                         'MsgBox(ex.ToString())
                     End Try
+
                 Next
 
                 If errFilesMsg.Count > 1 Then
@@ -504,20 +620,27 @@ Public Class Form1
                     MsgBox(str, vbCritical, "Error")
                 End If
 
+                For i As Integer = 0 To tmpStoryLs.Count - 1
+                    tmpStoryLs(i) = storyPath + Path.GetFileNameWithoutExtension(tmpStoryLs(i))
+                Next
             End Sub)
 
-        If CBool(filesList.Count) And isStoryListEmpty Then
+        '當沒有story的時候，若要新增故事，則remove storyTableList(0)後再新增
+        If CBool(tmpStoryLs.Count) And isStoryListEmpty Then
             storyTableList(0).Dispose()
             storyTableList.RemoveAt(0)
             loadStory()
             isStoryListEmpty = False
-            Me.Controls.Add(storyTableList(storyTableCurrentIndex))
-        ElseIf CBool(filesList.Count) Then
+            Me.Controls.Add(storyTableList(0))
+            setStoryListTitle()
+            mediaplayer.Play()
+        ElseIf CBool(tmpStoryLs.Count) Then '已經有story
             loadStory()
+            mediaplayer.Play()
         End If
-
+        btnSwitchStoryAdd()
+        tmpStoryLs.Clear()
         isLoadingStory = False
-        setStoryListTitle()
     End Sub
 
     Private Sub FileDragEnter(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragEnter
@@ -528,4 +651,56 @@ Public Class Form1
 
     'End Sub
 
+    Private Sub btnSwitchStoryAdd()
+
+        If storyTableList.Count > 1 And Not Me.Controls.Contains(btnSwitchStoryL) Then
+            btnSwitchStoryL.Size = New Drawing.Size(Me.ClientSize.Width * 0.05, Me.ClientSize.Height * 0.2)
+            btnSwitchStoryR.Size = New Drawing.Size(Me.ClientSize.Width * 0.05, Me.ClientSize.Height * 0.2)
+            btnSwitchStoryL.Location = New Drawing.Point(Me.ClientSize.Width * 0.025, Convert.ToInt32(Me.ClientSize.Height / 2 - btnSwitchStoryL.Height / 2))
+            btnSwitchStoryR.Location = New Drawing.Point(Me.ClientSize.Width * 0.925, Convert.ToInt32(Me.ClientSize.Height / 2 - btnSwitchStoryR.Height / 2))
+            btnSwitchStoryL.Text = "<"
+            btnSwitchStoryR.Text = ">"
+
+            AddHandler btnSwitchStoryL.Click, AddressOf ButtonClick
+            AddHandler btnSwitchStoryL.Click, AddressOf btnSwitchStoryClick
+            AddHandler btnSwitchStoryL.GotFocus, AddressOf ButtonCursor
+            AddHandler btnSwitchStoryR.Click, AddressOf ButtonClick
+            AddHandler btnSwitchStoryR.Click, AddressOf btnSwitchStoryClick
+            AddHandler btnSwitchStoryR.GotFocus, AddressOf ButtonCursor
+
+            Me.Controls.Add(btnSwitchStoryL)
+            Me.Controls.Add(btnSwitchStoryR)
+            btnSwitchStoryL.BringToFront()
+            btnSwitchStoryR.BringToFront()
+        End If
+    End Sub
+
+    Private Sub btnSwitchStoryClick(sender As Button, e As EventArgs)
+        storyTableList(storyTableCurrentIndex).Hide()
+        If sender.Text = "<" Then
+            If CBool(storyTableCurrentIndex) Then
+                storyTableCurrentIndex -= 1
+            Else
+                storyTableCurrentIndex = storyTableList.Count - 1
+            End If
+        Else
+            If storyTableCurrentIndex = storyTableList.Count - 1 Then
+                storyTableCurrentIndex = 0
+            Else
+                storyTableCurrentIndex += 1
+            End If
+        End If
+        storyTableList(storyTableCurrentIndex).Show()
+    End Sub
+
+    Private Sub storyBtnClick()
+        If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count > 0 Then
+            storyTableList(storyTableCurrentIndex).Hide()
+            btnSwitchStoryL.Hide()
+            btnSwitchStoryR.Hide()
+            chapterTableList(storyTableCurrentIndex).Show()
+        Else
+            MsgBox("在該故事的目錄中找不到任何章節(資料夾)。", vbCritical, "Error")
+        End If
+    End Sub
 End Class
