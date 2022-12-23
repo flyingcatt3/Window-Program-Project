@@ -15,15 +15,6 @@
           }
         }
       },
-      "Microsoft.NETCore.Platforms/5.0.0": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard1.0/_._": {}
-        },
-        "runtime": {
-          "lib/netstandard1.0/_._": {}
-        }
-      },
       "SixLabors.ImageSharp/2.1.3": {
         "type": "package",
         "dependencies": {
@@ -54,29 +45,29 @@
           }
         }
       },
-      "System.Text.Encoding.CodePages/5.0.0": {
+      "System.Text.Encoding.CodePages/7.0.0": {
         "type": "package",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "5.0.0"
-        },
         "compile": {
-          "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {
+          "lib/net7.0/System.Text.Encoding.CodePages.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {
+          "lib/net7.0/System.Text.Encoding.CodePages.dll": {
             "related": ".xml"
           }
         },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        },
         "runtimeTargets": {
-          "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": {
+          "runtimes/win/lib/net7.0/System.Text.Encoding.CodePages.dll": {
             "assetType": "runtime",
             "rid": "win"
           }
         }
       },
-      "VideoLAN.LibVLC.Windows/3.0.17.4": {
+      "VideoLAN.LibVLC.Windows/3.0.18": {
         "type": "package",
         "build": {
           "build/VideoLAN.LibVLC.Windows.targets": {}
@@ -130,24 +121,6 @@
         "lib/xamarinmac20/LibVLCSharp.xml",
         "libvlcsharp.3.6.7.nupkg.sha512",
         "libvlcsharp.nuspec"
-      ]
-    },
-    "Microsoft.NETCore.Platforms/5.0.0": {
-      "sha512": "VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
-      "type": "package",
-      "path": "microsoft.netcore.platforms/5.0.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/netstandard1.0/_._",
-        "microsoft.netcore.platforms.5.0.0.nupkg.sha512",
-        "microsoft.netcore.platforms.nuspec",
-        "runtime.json",
-        "useSharedDesignerContext.txt",
-        "version.txt"
       ]
     },
     "SixLabors.ImageSharp/2.1.3": {
@@ -204,51 +177,47 @@
         "version.txt"
       ]
     },
-    "System.Text.Encoding.CodePages/5.0.0": {
-      "sha512": "NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+    "System.Text.Encoding.CodePages/7.0.0": {
+      "sha512": "LSyCblMpvOe0N3E+8e0skHcrIhgV2huaNcjUUEa8hRtgEAm36aGkRoC8Jxlb6Ra6GSfF29ftduPNywin8XolzQ==",
       "type": "package",
-      "path": "system.text.encoding.codepages/5.0.0",
+      "path": "system.text.encoding.codepages/7.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Text.Encoding.CodePages.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net6.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Text.Encoding.CodePages.targets",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
-        "lib/net46/System.Text.Encoding.CodePages.dll",
-        "lib/net461/System.Text.Encoding.CodePages.dll",
-        "lib/net461/System.Text.Encoding.CodePages.xml",
-        "lib/netstandard1.3/System.Text.Encoding.CodePages.dll",
+        "lib/net462/System.Text.Encoding.CodePages.dll",
+        "lib/net462/System.Text.Encoding.CodePages.xml",
+        "lib/net6.0/System.Text.Encoding.CodePages.dll",
+        "lib/net6.0/System.Text.Encoding.CodePages.xml",
+        "lib/net7.0/System.Text.Encoding.CodePages.dll",
+        "lib/net7.0/System.Text.Encoding.CodePages.xml",
         "lib/netstandard2.0/System.Text.Encoding.CodePages.dll",
         "lib/netstandard2.0/System.Text.Encoding.CodePages.xml",
         "lib/xamarinios10/_._",
         "lib/xamarinmac20/_._",
         "lib/xamarintvos10/_._",
         "lib/xamarinwatchos10/_._",
-        "ref/MonoAndroid10/_._",
-        "ref/MonoTouch10/_._",
-        "ref/xamarinios10/_._",
-        "ref/xamarinmac20/_._",
-        "ref/xamarintvos10/_._",
-        "ref/xamarinwatchos10/_._",
-        "runtimes/win/lib/net461/System.Text.Encoding.CodePages.dll",
-        "runtimes/win/lib/net461/System.Text.Encoding.CodePages.xml",
-        "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll",
-        "runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.xml",
-        "runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll",
-        "runtimes/win/lib/netstandard2.0/System.Text.Encoding.CodePages.dll",
-        "runtimes/win/lib/netstandard2.0/System.Text.Encoding.CodePages.xml",
-        "system.text.encoding.codepages.5.0.0.nupkg.sha512",
+        "runtimes/win/lib/net6.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/net6.0/System.Text.Encoding.CodePages.xml",
+        "runtimes/win/lib/net7.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/net7.0/System.Text.Encoding.CodePages.xml",
+        "system.text.encoding.codepages.7.0.0.nupkg.sha512",
         "system.text.encoding.codepages.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
+        "useSharedDesignerContext.txt"
       ]
     },
-    "VideoLAN.LibVLC.Windows/3.0.17.4": {
-      "sha512": "oCvlMgF69X5J7ZcIM+DUcOiRDFTrOcZwhnaMkjGAB+PwtKqd0IaqcKcb6+oo11GfJyWjyPO/FXrXzE+Y/htmeg==",
+    "VideoLAN.LibVLC.Windows/3.0.18": {
+      "sha512": "A7Fg86aSziadDxB4F8AWN6kHNgEYJqerdPG9SflPM0GDO9m/O2jnc60mfSa52xOh5EC4U62W0y4kdyw+FgB2iQ==",
       "type": "package",
-      "path": "videolan.libvlc.windows/3.0.17.4",
+      "path": "videolan.libvlc.windows/3.0.18",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -554,8 +523,8 @@
         "build/x64/plugins/access/libaccess_srt_plugin.dll",
         "build/x64/plugins/access/libaccess_wasapi_plugin.dll",
         "build/x64/plugins/access/libattachment_plugin.dll",
-        "build/x64/plugins/access/libbluray-awt-j2se-1.3.0.jar",
-        "build/x64/plugins/access/libbluray-j2se-1.3.0.jar",
+        "build/x64/plugins/access/libbluray-awt-j2se-1.3.2.jar",
+        "build/x64/plugins/access/libbluray-j2se-1.3.2.jar",
         "build/x64/plugins/access/libcdda_plugin.dll",
         "build/x64/plugins/access/libdcp_plugin.dll",
         "build/x64/plugins/access/libdshow_plugin.dll",
@@ -1216,8 +1185,8 @@
         "build/x86/plugins/access/libaccess_srt_plugin.dll",
         "build/x86/plugins/access/libaccess_wasapi_plugin.dll",
         "build/x86/plugins/access/libattachment_plugin.dll",
-        "build/x86/plugins/access/libbluray-awt-j2se-1.3.0.jar",
-        "build/x86/plugins/access/libbluray-j2se-1.3.0.jar",
+        "build/x86/plugins/access/libbluray-awt-j2se-1.3.2.jar",
+        "build/x86/plugins/access/libbluray-j2se-1.3.2.jar",
         "build/x86/plugins/access/libcdda_plugin.dll",
         "build/x86/plugins/access/libdcp_plugin.dll",
         "build/x86/plugins/access/libdshow_plugin.dll",
@@ -1578,7 +1547,7 @@
         "build/x86/vlc.lib",
         "build/x86/vlccore.lib",
         "icon.png",
-        "videolan.libvlc.windows.3.0.17.4.nupkg.sha512",
+        "videolan.libvlc.windows.3.0.18.nupkg.sha512",
         "videolan.libvlc.windows.nuspec"
       ]
     }
@@ -1587,7 +1556,8 @@
     "net7.0-windows7.0": [
       "LibVLCSharp >= 3.6.7",
       "SixLabors.ImageSharp >= 2.1.3",
-      "VideoLAN.LibVLC.Windows >= 3.0.17.4"
+      "System.Text.Encoding.CodePages >= 7.0.0",
+      "VideoLAN.LibVLC.Windows >= 3.0.18"
     ]
   },
   "packageFolders": {
@@ -1637,9 +1607,13 @@
             "target": "Package",
             "version": "[2.1.3, )"
           },
+          "System.Text.Encoding.CodePages": {
+            "target": "Package",
+            "version": "[7.0.0, )"
+          },
           "VideoLAN.LibVLC.Windows": {
             "target": "Package",
-            "version": "[3.0.17.4, )"
+            "version": "[3.0.18, )"
           }
         },
         "imports": [

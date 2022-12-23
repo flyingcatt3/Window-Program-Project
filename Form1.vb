@@ -6,6 +6,7 @@ Imports System.Threading
 Imports System.IO.Compression
 Imports System.Reflection
 Imports System.Xml
+Imports System.Text
 
 Public Class Form1
 
@@ -395,6 +396,7 @@ Public Class Form1
                     chapterBtn.FlatAppearance.MouseOverBackColor = Drawing.Color.FromArgb(25, 0, 0, 0)
                     chapterBtn.FlatAppearance.MouseDownBackColor = Drawing.Color.FromArgb(50, 0, 0, 0)
                     chapterBtn.Size = New Drawing.Size(storyTable.Width - storyTable.Padding.Right - storyTable.Padding.Left - chapterBtn.Margin.All * 2, storyTable.Height / 8)
+                    'chapterBtn.Text = utf8.GetString(big5.GetBytes(dir2Info.Name))
                     chapterBtn.Text = dir2Info.Name
                     chapterBtn.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
                     chapterBtn.TextAlign = Drawing.ContentAlignment.MiddleCenter
@@ -414,9 +416,11 @@ Public Class Form1
             storyTable.Controls.Add(storyBtn, 0, 0)
             storyTable.Controls.Add(storyName, 0, 1)
             storyTableList.Add(storyTable)
-            Me.Controls.Add(chapterTable)
             chapterTableList.Add(chapterTable)
-            'MsgBox("Added to storyTableList")
+            Me.Controls.Add(storyTable)
+            Me.Controls.Add(chapterTable)
+
+            'MsgBox("Finish loading.")
         Next
     End Sub
 
@@ -552,6 +556,13 @@ Public Class Form1
     End Sub
 
     Private Async Sub FileDragDrop(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DragEventArgs) Handles MyBase.DragDrop
+
+        isLoadingStory = True
+
+        If isStoryListEmpty Then
+            setStoryListTitle()
+        End If
+
         Dim files() As String = e.Data.GetData(DataFormats.FileDrop)
         Dim filesList As New List(Of String)
         Dim errFilesMsg As New List(Of String)
@@ -560,8 +571,6 @@ Public Class Form1
         Dim mediaplayer = New MediaPlayer(media)
         mediaplayer.EnableHardwareDecoding = True
         mediaplayer.Volume = Math.Sqrt(mediaplayer.Volume) * 10
-
-        isLoadingStory = True
 
         errFilesMsg.Add("處理下列檔案時發生錯誤：" & vbCrLf & vbCrLf)
 
@@ -596,7 +605,12 @@ Public Class Form1
                     My.Computer.FileSystem.CreateDirectory(extractPath)
 
                     Try
-                        ZipFile.ExtractToDirectory(zipPath, extractPath, True)
+                        'https://marcus116.blogspot.com/2019/03/netcore-aspnet-core-using-encoding-big5.html
+                        Dim big5 As System.Text.Encoding, utf8 As System.Text.Encoding
+                        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+                        big5 = System.Text.Encoding.GetEncoding(950)
+                        utf8 = System.Text.Encoding.Default
+                        ZipFile.ExtractToDirectory(zipPath, extractPath, big5, True)
                     Catch ex As Exception
                         My.Computer.FileSystem.DeleteDirectory(extractPath, FileIO.UIOption.OnlyErrorDialogs, FileIO.RecycleOption.DeletePermanently)
                         Select Case ex.GetType()
@@ -630,9 +644,9 @@ Public Class Form1
             storyTableList(0).Dispose()
             storyTableList.RemoveAt(0)
             loadStory()
+            storyTableList(storyTableCurrentIndex).Show()
             isStoryListEmpty = False
             Me.Controls.Add(storyTableList(0))
-            setStoryListTitle()
             mediaplayer.Play()
         ElseIf CBool(tmpStoryLs.Count) Then '已經有story
             loadStory()
@@ -677,6 +691,7 @@ Public Class Form1
 
     Private Sub btnSwitchStoryClick(sender As Button, e As EventArgs)
         storyTableList(storyTableCurrentIndex).Hide()
+        'MsgBox(storyTableCurrentIndex.ToString())
         If sender.Text = "<" Then
             If CBool(storyTableCurrentIndex) Then
                 storyTableCurrentIndex -= 1
@@ -690,6 +705,7 @@ Public Class Form1
                 storyTableCurrentIndex += 1
             End If
         End If
+        'MsgBox(storyTableCurrentIndex.ToString())
         storyTableList(storyTableCurrentIndex).Show()
     End Sub
 

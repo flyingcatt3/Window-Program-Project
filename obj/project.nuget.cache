@@ -1,15 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "kFM0XCk4EMlmgm97pla97qKQLdfE9QN5pvrw6YKZwBzq5CCW/JoufaXC8W6S7+jqMxGuIOcoENnZBsWkzt+dDg==",
+  "dgSpecHash": "7bW1IFt6Q0Pk+KAbZ2QdXUhpvh7icPuuwqWQ530YgsNTLCm6cnm0v3G10G2ETh8xDVoxXpofwhSlVBp/HABZjg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jones\\OneDrive\\桌面\\視窗程設專案\\Window-Program-Project\\WinFormsApp1.vbproj",
   "expectedPackageFiles": [
     "C:\\Users\\jones\\.nuget\\packages\\libvlcsharp\\3.6.7\\libvlcsharp.3.6.7.nupkg.sha512",
-    "C:\\Users\\jones\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
     "C:\\Users\\jones\\.nuget\\packages\\sixlabors.imagesharp\\2.1.3\\sixlabors.imagesharp.2.1.3.nupkg.sha512",
     "C:\\Users\\jones\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\5.0.0\\system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
-    "C:\\Users\\jones\\.nuget\\packages\\system.text.encoding.codepages\\5.0.0\\system.text.encoding.codepages.5.0.0.nupkg.sha512",
-    "C:\\Users\\jones\\.nuget\\packages\\videolan.libvlc.windows\\3.0.17.4\\videolan.libvlc.windows.3.0.17.4.nupkg.sha512"
+    "C:\\Users\\jones\\.nuget\\packages\\system.text.encoding.codepages\\7.0.0\\system.text.encoding.codepages.7.0.0.nupkg.sha512",
+    "C:\\Users\\jones\\.nuget\\packages\\videolan.libvlc.windows\\3.0.18\\videolan.libvlc.windows.3.0.18.nupkg.sha512"
   ],
   "logs": []
 }

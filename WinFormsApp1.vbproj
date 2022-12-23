@@ -7,8 +7,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
-    <AssemblyVersion>2022.12.21.0</AssemblyVersion>
-    <FileVersion>2022.12.21.0</FileVersion>
+    <AssemblyVersion>2022.12.23.0</AssemblyVersion>
+    <FileVersion>2022.12.23.0</FileVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
@@ -73,7 +73,8 @@
   <ItemGroup>
     <PackageReference Include="LibVLCSharp" Version="3.6.7" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.17.4" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.18" />
   </ItemGroup>
 
   <ItemGroup>
