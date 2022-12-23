@@ -712,6 +712,7 @@ Public Class Form1
 
     Private Sub storyBtnClick()
         If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count > 0 Then
+            Me.AllowDrop = False
             storyTableList(storyTableCurrentIndex).Hide()
             btnSwitchStoryL.Hide()
             btnSwitchStoryR.Hide()
@@ -722,6 +723,6 @@ Public Class Form1
     End Sub
 
     Private Sub chapterBtnClick()
-        Me.AllowDrop = False
+
     End Sub
 End Class
