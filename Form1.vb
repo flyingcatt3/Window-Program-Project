@@ -345,7 +345,7 @@ Public Class Form1
             Dim dirInfo As New System.IO.DirectoryInfo(foundDir)
             Dim storyTable As New StoryTableLayoutPanel
             Dim storyName As New Label
-            Dim storyBtn As New Button
+            Dim storyBtn As New dbBtn
             Dim chapterTable As New StoryTableLayoutPanel
 
             storyTable.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
@@ -402,6 +402,7 @@ Public Class Form1
                     chapterBtn.TextAlign = Drawing.ContentAlignment.MiddleCenter
 
                     AddHandler chapterBtn.Click, AddressOf ButtonClick
+                    AddHandler chapterBtn.Click, AddressOf chapterBtnClick
                     AddHandler chapterBtn.GotFocus, AddressOf ButtonCursor
 
                     chapterTable.Controls.Add(chapterBtn)
@@ -718,5 +719,9 @@ Public Class Form1
         Else
             MsgBox("在該故事的目錄中找不到任何章節(資料夾)。", vbCritical, "Error")
         End If
+    End Sub
+
+    Private Sub chapterBtnClick()
+        Me.AllowDrop = False
     End Sub
 End Class
