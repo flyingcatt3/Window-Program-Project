@@ -711,7 +711,7 @@ Public Class Form1
     End Sub
 
     Private Sub storyBtnClick()
-        If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count > 0 Then
+        If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count Then
             Me.AllowDrop = False
             storyTableList(storyTableCurrentIndex).Hide()
             btnSwitchStoryL.Hide()
