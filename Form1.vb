@@ -34,7 +34,7 @@ Public Class Form1
 
         Public Sub New()
             DoubleBuffered = True
-            'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+            SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
             Margin = New Padding(0, 0, 0, 0)
             Padding = New Padding(0, 0, 0, 0)
             BackColor = Drawing.Color.Transparent
@@ -67,28 +67,40 @@ Public Class Form1
     End Class
 
     ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
+    ReadOnly supportedCmd As New List(Of String) From {"background", "music", "title_fullscreen", "txt", "sound", "character", "fade_white", "fade_black", "flash", "description", "stopmusic", "hide_left", "hide_right", "hide_center", "video", "exit", "location"}
     ReadOnly gamePath = Application.StartupPath
     ReadOnly storyPath = gamePath + "story\"
     ReadOnly converted_imgPath = gamePath + "converted_imgs\"
     ReadOnly StoryListBG = gamePath + "StoryListBG.jpg"
-    ReadOnly Clicksound As String = gamePath + "click.mp3"
+    ReadOnly btnClickSoundPath As String = gamePath + "click.mp3"
     ReadOnly addStorySound As String = gamePath + "addstory.wav"
     ReadOnly libvlc_repeat = New LibVLC("--role=music", "--input-repeat=65535", "--aout=mmedevice", "--mmdevice-backend=wasapi")
     ReadOnly libvlc = New LibVLC("--role=music", "--aout=mmedevice", "--mmdevice-backend=wasapi")
-    Dim startBGM As New List(Of String)()
-    Dim storyTableList As New List(Of TableLayoutPanel)()
-    Dim chapterTableList As New List(Of TableLayoutPanel)()
+    Dim startBGM As New List(Of String)
+    Dim fadeScreen As New fadePanel
+    Dim storyTableList As New List(Of TableLayoutPanel)
+    Dim chapterTableList As New List(Of TableLayoutPanel)
     Dim storyTableCurrentIndex As Integer = 0
-    Dim StoryListTitle As New Label()
+    Dim StoryListTitle As New Label
+    Dim txt_StoryLsTitle
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
-    Dim fadeScreen As New fadePanel
     Dim isStoryListEmpty As Boolean = False
     Dim isLoadingStory As Boolean
+    Dim isDisplayingStory As Boolean = False
+    Dim isDisplayingEffect As Boolean = False
+    Dim stopEffect As Boolean = False
     Dim btnSwitchStoryL As New switchStoryBtn
     Dim btnSwitchStoryR As New switchStoryBtn
     Dim tmpStoryLs As New List(Of String)
     Dim storyLs As New List(Of String)
+    Dim cmdQueue As New Queue(Of Func(Of Object))
+    Dim mpls As New List(Of MediaPlayer)
+    Dim sound As Media
+    Dim title_fullscreen As New Label
+    Dim txt As New Label
+    Dim lct As New Label
+    Dim description As New Label
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -156,14 +168,17 @@ Public Class Form1
     End Property
 
     Async Sub setStoryListTitle()
-        Dim txt = "選擇故事_"
+        txt_StoryLsTitle = "選擇故事"
         StoryListTitle.Text = ""
 
         Await Task.Run(
             Sub()
 
-                For x = 0 To txt.Length - 1
-                    StoryListTitle.Text &= txt(x)
+                For x = 0 To txt_StoryLsTitle.Length - 1
+                    If isStoryListEmpty Then
+                        Exit For
+                    End If
+                    StoryListTitle.Text &= txt_StoryLsTitle(x)
                     Thread.Sleep(50)
                 Next
 
@@ -171,10 +186,13 @@ Public Class Form1
                     If Me.WindowState <> FormWindowState.Minimized And Not resizing Then
                         If isLoadingStory Then
                             StoryListTitle.Text = "Loading..."
+                        ElseIf isStoryListEmpty Then
+                            StoryListTitle.Text = "找不到檔案。"
+                            Exit Do
                         Else
-                            StoryListTitle.Text = txt
+                            StoryListTitle.Text = txt_StoryLsTitle
                             Thread.Sleep(100)
-                            StoryListTitle.Text = StoryListTitle.Text.Remove(txt.Length - 1)
+                            StoryListTitle.Text += "_"
                         End If
                     ElseIf Me.WindowState = FormWindowState.Minimized Then
                         StoryListTitle.Hide()
@@ -199,9 +217,20 @@ Public Class Form1
         Dim media = New Media(libvlc_repeat, file)
         Dim mediaPlayer = New MediaPlayer(media)
 
+        mpls.Add(mediaPlayer)
+
         mediaPlayer.EnableHardwareDecoding = True
         mediaPlayer.Volume = 60
         mediaPlayer.Play()
+
+        sound = New Media(libvlc, btnClickSoundPath)
+        Dim mediaplayer_Clicksound = New MediaPlayer(sound)
+        mediaplayer_Clicksound.EnableHardwareDecoding = True
+        mpls.Add(mediaplayer_Clicksound)
+        Dim storySound = New MediaPlayer(sound)
+        storySound.EnableHardwareDecoding = True
+        storySound.FileCaching = 100
+        mpls.Add(storySound)
 
         '格式設定
         Me.ClientSize = New Drawing.Size(Screen.PrimaryScreen.Bounds.Width * 0.98, Screen.PrimaryScreen.Bounds.Width * 0.42)
@@ -214,6 +243,8 @@ Public Class Form1
         'Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         AddHandler Start.Click, AddressOf ButtonClick
         AddHandler Start.GotFocus, AddressOf ButtonCursor
+        AddHandler title_fullscreen.Click, AddressOf displayStory
+        AddHandler txt.Click, AddressOf displayStory
 
         pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
 
@@ -227,7 +258,6 @@ Public Class Form1
     End Sub
 
     Private Async Sub fadeStartLayout() Handles Start.Click
-
         Start.Enabled = False
 
         Me.Controls.Add(fadeScreen)
@@ -249,7 +279,7 @@ Public Class Form1
 
         ver.Dispose()
         StartLayout.Dispose()
-        fadeScreen.Dispose()
+        fadeScreen.Hide()
         ChooseStory()
 
     End Sub
@@ -319,10 +349,9 @@ Public Class Form1
     End Sub
 
     Sub ButtonClick()
-        Dim media = New Media(libvlc, Clicksound)
-        Dim mediaplayer = New MediaPlayer(media)
-        mediaplayer.EnableHardwareDecoding = True
-        mediaplayer.Play()
+        mpls(1).Media = sound
+        mpls(1).Play()
+        sound = New Media(libvlc, btnClickSoundPath)
     End Sub
 
     Sub ButtonCursor(sender As Button, e As EventArgs)
@@ -462,6 +491,7 @@ Public Class Form1
             storyTable.Controls.Add(storyNotFound, 0, 0)
             storyTableList.Add(storyTable)
         End If
+
     End Sub
 
     Private Sub ChooseStory()
@@ -523,7 +553,7 @@ Public Class Form1
         End If
 
         '視窗從最小化後恢復
-        If Me.WindowState <> FormWindowState.Minimized And storyTableList.Count And Not StoryListTitle.Visible Then
+        If Me.WindowState <> FormWindowState.Minimized And storyTableList.Count And Not StoryListTitle.Visible And Not isDisplayingStory Then
             StoryListTitle.Width = Me.ClientSize.Width
             StoryListTitle.Height = StoryListTitle.Font.Height * 1.5
             StoryListTitle.Text = ""
@@ -544,6 +574,16 @@ Public Class Form1
 
         If Me.WindowState = FormWindowState.Normal Then
             tmpWindowSize = Me.Size
+        End If
+
+        If isDisplayingStory Then
+            title_fullscreen.Width = Me.ClientSize.Width * 0.7
+            title_fullscreen.Height = Me.ClientSize.Height * 0.7
+            title_fullscreen.Location = center(title_fullscreen)
+
+            txt.Width = Me.ClientSize.Width * 0.8
+            txt.Height = Me.ClientSize.Height * 0.28
+            txt.Location = New Drawing.Point(Me.ClientSize.Width * 0.1, Me.ClientSize.Height * 0.7)
         End If
 
     End Sub
@@ -713,6 +753,7 @@ Public Class Form1
     Private Sub storyBtnClick()
         If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count Then
             Me.AllowDrop = False
+            txt_StoryLsTitle = "選擇章節"
             storyTableList(storyTableCurrentIndex).Hide()
             btnSwitchStoryL.Hide()
             btnSwitchStoryR.Hide()
@@ -722,7 +763,295 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub chapterBtnClick()
+    Private Sub chapterBtnClick(sender As Button, e As EventArgs)
+        '閱覽劇情的功能.
+        Dim script As String() = File.ReadAllLines(storyLs(storyTableCurrentIndex) + "\" + sender.Text + "\script.txt")
 
+        'Check script
+        For Each cmd In script
+            If Not supportedCmd.Contains(cmd.Split(" ")(0)) Then
+                'MsgBox(cmd.Split(" ")(0))
+                MsgBox("這個章節內的 script.txt 有錯誤，故無法載入該章節.")
+                Exit Sub
+            End If
+        Next
+
+        loadScript(script, storyLs(storyTableCurrentIndex) + "\" + sender.Text)
+    End Sub
+
+    Private Async Sub loadScript(script As String(), chapterPath As String)
+
+        For Each ctrl As Control In Me.Controls()
+            If ctrl.Visible Then
+                ctrl.Hide()
+            End If
+        Next
+
+        For Each cmd As String In script
+            Dim key() = cmd.Split(" ")
+
+            title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
+            title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
+            title_fullscreen.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
+            title_fullscreen.ForeColor = Drawing.Color.White
+            title_fullscreen.BackColor = Drawing.Color.Transparent
+            title_fullscreen.Hide()
+
+            txt.Anchor = Drawing.ContentAlignment.BottomCenter
+            txt.TextAlign = Drawing.ContentAlignment.TopLeft
+            txt.Font = New Font(pfc.Families(0), 18, FontStyle.Bold)
+            txt.ForeColor = Drawing.Color.FromArgb(47, 62, 105)
+            txt.BackColor = Drawing.Color.FromArgb(230, 255, 255, 255)
+            txt.Padding = New Padding(20, 20, 20, 20)
+            txt.Hide()
+
+            description.TextAlign = Drawing.ContentAlignment.MiddleCenter
+            description.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+            description.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
+            description.BackColor = Drawing.Color.FromArgb(200, 136, 127, 153)
+            description.Padding = New Padding(20, 20, 20, 20)
+            description.Hide()
+
+            Me.Controls.Add(title_fullscreen)
+            Me.Controls.Add(txt)
+            Me.Controls.Add(description)
+
+            Select Case key(0)
+                Case "background"
+                    If Not supportedImgFormat.Contains(Path.GetExtension(key(1))) Then
+                        cmdQueue.Enqueue(
+                            Function() As Object
+                                Me.BackgroundImage = Drawing.Image.FromFile(imgConverter(chapterPath + "\" + key(1)))
+                                Return 0
+                            End Function)
+                    Else
+                        cmdQueue.Enqueue(
+                            Function() As Object
+                                Me.BackgroundImage = Drawing.Image.FromFile(chapterPath + "\" + key(1))
+                                Return 0
+                            End Function)
+                    End If
+                Case "character"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 2
+                        End Function)
+                Case "title_fullscreen"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            isDisplayingEffect = True
+
+                            title_fullscreen.Text = ""
+                            title_fullscreen.Width = Me.ClientSize.Width * 0.7
+                            title_fullscreen.Height = Me.ClientSize.Height * 0.7
+                            title_fullscreen.Location = center(title_fullscreen)
+                            title_fullscreen.Show()
+
+                            Task.Run(
+                                Sub()
+                                    Dim t = ""
+
+                                    For Each row In key.Skip(1)
+                                        t += row.Remove(0, 1).Remove(row.Length - 2, 1)
+                                        t += vbCrLf
+                                    Next
+                                    For i = 0 To t.Length - 1
+                                        If stopEffect Then
+                                            'MsgBox("stop")
+                                            title_fullscreen.Text = t
+                                            stopEffect = False
+                                            Exit For
+                                        Else
+                                            title_fullscreen.Text += t(i)
+                                            Thread.Sleep(100)
+                                        End If
+                                    Next
+                                    isDisplayingEffect = False
+                                End Sub)
+
+                            Return 1
+                        End Function)
+                Case "txt"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            isDisplayingEffect = True
+
+                            txt.Text = ""
+                            txt.Width = Me.ClientSize.Width * 0.8
+                            txt.Height = Me.ClientSize.Height * 0.28
+                            txt.Location = New Drawing.Point(Me.ClientSize.Width * 0.1, Me.ClientSize.Height * 0.7)
+                            txt.Show()
+
+                            Task.Run(
+                                Sub()
+                                    Dim name = "[ " + key(1).Remove(0, 1).Remove(key(1).Length - 2, 1) + " ]" + vbCrLf + vbCrLf
+                                    Dim t = ""
+
+                                    txt.Text = name
+
+                                    For Each row In key.Skip(2)
+                                        t += row.Remove(0, 1).Remove(row.Length - 2, 1)
+                                        t += vbCrLf
+                                    Next
+                                    For i = 0 To t.Length - 1
+                                        If stopEffect Then
+                                            'MsgBox("stop")
+                                            txt.Text = name + t
+                                            stopEffect = False
+                                            Exit For
+                                        Else
+                                            txt.Text += t(i)
+                                            Thread.Sleep(100)
+                                        End If
+                                    Next
+                                    isDisplayingEffect = False
+                                End Sub)
+
+                            Return 1
+                        End Function)
+                Case "description"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            txt.Hide()
+
+                            description.Height = Me.ClientSize.Height * 0.1
+                            description.Location = center(description)
+                            description.Text = key(1).Remove(0, 1).Remove(key(1).Length - 2, 1)
+                            description.Show()
+
+                            Task.Run(Sub()
+                                         For w = 0 To Me.ClientSize.Width * 0.5 Step 20
+                                             description.Width = w
+                                             description.Location = center(description)
+                                         Next
+                                     End Sub)
+                            Return 3
+                        End Function)
+                Case "location"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "sound"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Dim media = New Media(libvlc, chapterPath + "\" + key(1))
+                            mpls(2).Media = media
+                            mpls(2).Play()
+                            'MsgBox(key(1))
+                            Return 3
+                        End Function)
+                Case "music"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Dim media = New Media(libvlc_repeat, chapterPath + "\" + key(1))
+                            mpls(0).Media = media
+                            mpls(0).Play()
+                            Return 0
+                        End Function)
+                Case "stopmusic"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            mpls(0).Stop()
+                            Return 0
+                        End Function)
+                Case "fade_white"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            'fadeScreen.Show()
+                            Return 0
+                        End Function)
+                Case "fade_black"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "flash"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "hide_left"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "hide_right"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "hide_center"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "video"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+                Case "exit"
+                    cmdQueue.Enqueue(
+                        Function() As Object
+                            Return 0
+                        End Function)
+            End Select
+        Next
+        'MsgBox("finished task.")
+
+        Await Task.Run(
+            Sub()
+                Dim fadeColor = 0
+                fadeScreen.BringToFront()
+                fadeScreen.BackColor = Drawing.Color.FromArgb(0, 0, 0, 0)
+                fadeScreen.Show()
+                While CBool(255 - fadeColor)
+                    fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                    fadeColor += 1
+                    Thread.Sleep(1)
+                End While
+            End Sub)
+
+        Me.BackgroundImage = Nothing
+        fadeScreen.Hide()
+        mpls(0).Stop()
+        isDisplayingStory = True
+        Thread.Sleep(300)
+        displayStory()
+    End Sub
+
+    Private Sub displayStory() Handles Me.Click
+        If isDisplayingStory Then
+            If isDisplayingEffect Then
+                stopEffect = True
+                'MsgBox("stop")
+                Exit Sub
+            Else
+                Do While cmdQueue.Count
+                    Select Case cmdQueue(0)()
+                        Case 0
+                            cmdQueue.Dequeue()
+                        Case 1
+                            cmdQueue(1)()
+                            cmdQueue.Dequeue()
+                            cmdQueue.Dequeue()
+                            Exit Do
+                        Case 2
+                            cmdQueue.Dequeue()
+                        Case 3
+                            cmdQueue.Dequeue()
+                            Exit Do
+                    End Select
+                    If title_fullscreen.Visible Then
+                        title_fullscreen.Hide()
+                    End If
+                    If description.Visible Then
+                        description.Hide()
+                    End If
+                    'MsgBox(cmdQueue.Count)
+                Loop
+            End If
+        End If
     End Sub
 End Class
