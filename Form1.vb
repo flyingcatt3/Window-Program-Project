@@ -787,8 +787,10 @@ Public Class Form1
             End If
         Next
 
+        Dim scriptLs = script.ToList()
+
         For Each cmd As String In script
-            Dim key() = cmd.Split(" ")
+            Dim key = cmd.Split(" ")(0)
 
             title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
             title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
@@ -816,18 +818,19 @@ Public Class Form1
             Me.Controls.Add(txt)
             Me.Controls.Add(description)
 
-            Select Case key(0)
+            Select Case key
                 Case "background"
-                    If Not supportedImgFormat.Contains(Path.GetExtension(key(1))) Then
+                    Dim fileName = cmd.Split(" ")(1)
+                    If Not supportedImgFormat.Contains(Path.GetExtension(fileName)) Then
                         cmdQueue.Enqueue(
                             Function() As Object
-                                Me.BackgroundImage = Drawing.Image.FromFile(imgConverter(chapterPath + "\" + key(1)))
+                                Me.BackgroundImage = Drawing.Image.FromFile(imgConverter(chapterPath + "\" + fileName))
                                 Return 0
                             End Function)
                     Else
                         cmdQueue.Enqueue(
                             Function() As Object
-                                Me.BackgroundImage = Drawing.Image.FromFile(chapterPath + "\" + key(1))
+                                Me.BackgroundImage = Drawing.Image.FromFile(chapterPath + "\" + fileName)
                                 Return 0
                             End Function)
                     End If
@@ -850,11 +853,18 @@ Public Class Form1
                             Task.Run(
                                 Sub()
                                     Dim t = ""
+                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
 
-                                    For Each row In key.Skip(1)
-                                        t += row.Remove(0, 1).Remove(row.Length - 2, 1)
-                                        t += vbCrLf
+                                    For Each row As String In splcmd.SkipLast(1)
+                                        If row = " " Then
+                                            t += vbCrLf
+                                        Else
+                                            t += row
+                                        End If
                                     Next
+
+                                    t += splcmd.Last()
+
                                     For i = 0 To t.Length - 1
                                         If stopEffect Then
                                             'MsgBox("stop")
@@ -868,7 +878,6 @@ Public Class Form1
                                     Next
                                     isDisplayingEffect = False
                                 End Sub)
-
                             Return 1
                         End Function)
                 Case "txt"
@@ -884,15 +893,22 @@ Public Class Form1
 
                             Task.Run(
                                 Sub()
-                                    Dim name = "[ " + key(1).Remove(0, 1).Remove(key(1).Length - 2, 1) + " ]" + vbCrLf + vbCrLf
+                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
+                                    Dim name = "[ " + splcmd(0) + " ]" + vbCrLf + vbCrLf
                                     Dim t = ""
+
+                                    For Each row As String In splcmd.Skip(2).SkipLast(1)
+                                        If row = " " Then
+                                            t += vbCrLf
+                                        Else
+                                            t += row
+                                        End If
+                                    Next
+
+                                    t += splcmd.Last()
 
                                     txt.Text = name
 
-                                    For Each row In key.Skip(2)
-                                        t += row.Remove(0, 1).Remove(row.Length - 2, 1)
-                                        t += vbCrLf
-                                    Next
                                     For i = 0 To t.Length - 1
                                         If stopEffect Then
                                             'MsgBox("stop")
@@ -901,22 +917,25 @@ Public Class Form1
                                             Exit For
                                         Else
                                             txt.Text += t(i)
-                                            Thread.Sleep(100)
+                                            Thread.Sleep(50)
                                         End If
                                     Next
                                     isDisplayingEffect = False
                                 End Sub)
 
-                            Return 1
+                            If scriptLs(scriptLs.FindIndex(Function(value As String) value = cmd) + 1).Split(" ")(0) = "sound" Then
+                                Return 1
+                            Else
+                                Return 3
+                            End If
                         End Function)
                 Case "description"
                     cmdQueue.Enqueue(
                         Function() As Object
-                            txt.Hide()
-
+                            Dim splcmd = cmd.Split(Chr(34)).Skip(1)
                             description.Height = Me.ClientSize.Height * 0.1
                             description.Location = center(description)
-                            description.Text = key(1).Remove(0, 1).Remove(key(1).Length - 2, 1)
+                            description.Text = splcmd(0)
                             description.Show()
 
                             Task.Run(Sub()
@@ -935,7 +954,7 @@ Public Class Form1
                 Case "sound"
                     cmdQueue.Enqueue(
                         Function() As Object
-                            Dim media = New Media(libvlc, chapterPath + "\" + key(1))
+                            Dim media = New Media(libvlc, chapterPath + "\" + cmd.Split(" ")(1))
                             mpls(2).Media = media
                             mpls(2).Play()
                             'MsgBox(key(1))
@@ -944,7 +963,7 @@ Public Class Form1
                 Case "music"
                     cmdQueue.Enqueue(
                         Function() As Object
-                            Dim media = New Media(libvlc_repeat, chapterPath + "\" + key(1))
+                            Dim media = New Media(libvlc_repeat, chapterPath + "\" + cmd.Split(" ")(1))
                             mpls(0).Media = media
                             mpls(0).Play()
                             Return 0
@@ -1029,6 +1048,16 @@ Public Class Form1
                 Exit Sub
             Else
                 Do While cmdQueue.Count
+                    If title_fullscreen.Visible Then
+                        title_fullscreen.Hide()
+                    End If
+                    If description.Visible Then
+                        description.Hide()
+                    End If
+                    If txt.Visible Then
+                        txt.Hide()
+                    End If
+
                     Select Case cmdQueue(0)()
                         Case 0
                             cmdQueue.Dequeue()
@@ -1043,12 +1072,6 @@ Public Class Form1
                             cmdQueue.Dequeue()
                             Exit Do
                     End Select
-                    If title_fullscreen.Visible Then
-                        title_fullscreen.Hide()
-                    End If
-                    If description.Visible Then
-                        description.Hide()
-                    End If
                     'MsgBox(cmdQueue.Count)
                 Loop
             End If
