@@ -213,43 +213,48 @@ Public Class Form1
             startBGM.Add(foundFile)
         Next
 
+        '設定3個媒體播放器
         Dim file As String = startBGM(GetRandom(0, startBGM.Count - 1))
         Dim media = New Media(libvlc_repeat, file)
-        Dim mediaPlayer = New MediaPlayer(media)
-
-        mpls.Add(mediaPlayer)
-
-        mediaPlayer.EnableHardwareDecoding = True
-        mediaPlayer.Volume = 60
-        mediaPlayer.Play()
-
         sound = New Media(libvlc, btnClickSoundPath)
-        Dim mediaplayer_Clicksound = New MediaPlayer(sound)
-        mediaplayer_Clicksound.EnableHardwareDecoding = True
-        mpls.Add(mediaplayer_Clicksound)
-        Dim storySound = New MediaPlayer(sound)
-        storySound.EnableHardwareDecoding = True
-        storySound.FileCaching = 100
-        mpls.Add(storySound)
+        Dim mp = New MediaPlayer(media)
+        Dim mpCS = New MediaPlayer(sound)
+        Dim mpSS = New MediaPlayer(sound)
+
+        mp.EnableHardwareDecoding = True
+        mpCS.EnableHardwareDecoding = True
+        mpSS.EnableHardwareDecoding = True
+
+        mp.FileCaching = 10
+        mpSS.FileCaching = 10
+
+        mp.Volume = 60
+        mp.Play()
+
+        mpls.Add(mp)
+        mpls.Add(mpCS)
+        mpls.Add(mpSS)
 
         '格式設定
         Me.ClientSize = New Drawing.Size(Screen.PrimaryScreen.Bounds.Width * 0.98, Screen.PrimaryScreen.Bounds.Width * 0.42)
+        tmpWindowSize = Me.Size
+
         Me.StartLayout.Width = Me.ClientSize.Width / 2
         Me.StartLayout.Height = Me.ClientSize.Height / 3 * 2
         Me.ver.Text = "v" + System.IO.File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location).ToString("yyyyMMdd")
-        tmpWindowSize = Me.Size
+
+        pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
+        Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
+        GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
+
         'Me.StartLayout.Show()
         'Me.BackgroundImage = Bitmap.FromFile(StoryListBG, Drawing.Imaging.PixelFormat.Format32bppPArgb)
         'Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
+
         AddHandler Start.Click, AddressOf ButtonClick
         AddHandler Start.GotFocus, AddressOf ButtonCursor
         AddHandler title_fullscreen.Click, AddressOf displayStory
         AddHandler txt.Click, AddressOf displayStory
-
-        pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
-
-        Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
-        GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
 
         Me.CenterToScreen()
         StartColorCycle()
@@ -784,6 +789,7 @@ Public Class Form1
         For Each ctrl As Control In Me.Controls()
             If ctrl.Visible Then
                 ctrl.Hide()
+                ctrl.Enabled = False
             End If
         Next
 
