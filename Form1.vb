@@ -707,9 +707,12 @@ Public Class Form1
         e.Effect = DragDropEffects.All
     End Sub
 
-    'Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
-
-    'End Sub
+    Private Sub ver_Click(sender As Object, e As EventArgs) Handles ver.Click
+        Dim myProcess = New Process()
+        myProcess.StartInfo.UseShellExecute = True
+        myProcess.StartInfo.FileName = "https://github.com/flyingcatt3/Window-Program-Project"
+        myProcess.Start()
+    End Sub
 
     Private Sub btnSwitchStoryAdd()
 
@@ -944,12 +947,13 @@ Public Class Form1
                             description.Text = splcmd(0)
                             description.Show()
 
-                            Task.Run(Sub()
-                                         For w = 0 To Me.ClientSize.Width * 0.5 Step 20
-                                             description.Width = w
-                                             description.Location = center(description)
-                                         Next
-                                     End Sub)
+                            Task.Run(
+                                Sub()
+                                    For w = 0 To Me.ClientSize.Width * 0.5 Step 20
+                                        description.Width = w
+                                        description.Location = center(description)
+                                    Next
+                                End Sub)
                             Return 3
                         End Function)
                 Case "location"
