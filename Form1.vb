@@ -1027,7 +1027,7 @@ Public Class Form1
                         End Function)
             End Select
         Next
-        'MsgBox("finished task.")
+        'MsgBox("finished loading.")
 
         Await Task.Run(
             Sub()
