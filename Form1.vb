@@ -66,6 +66,14 @@ Public Class Form1
         End Sub
     End Class
 
+    Public Class dbLabel
+        Inherits Label
+
+        Public Sub New()
+            DoubleBuffered = True
+        End Sub
+    End Class
+
     ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
     ReadOnly supportedCmd As New List(Of String) From {"background", "music", "title_fullscreen", "txt", "sound", "character", "fade_white", "fade_black", "flash", "description", "stopmusic", "hide_left", "hide_right", "hide_center", "video", "exit", "location"}
     ReadOnly gamePath = Application.StartupPath
@@ -81,7 +89,7 @@ Public Class Form1
     Dim storyTableList As New List(Of TableLayoutPanel)
     Dim chapterTableList As New List(Of TableLayoutPanel)
     Dim storyTableCurrentIndex As Integer = 0
-    Dim StoryListTitle As New Label
+    Dim StoryListTitle As New dbLabel
     Dim txt_StoryLsTitle
     Dim tmpWindowSize, resizing
     Dim pfc As New PrivateFontCollection()
@@ -97,10 +105,10 @@ Public Class Form1
     Dim cmdQueue As New Queue(Of Func(Of Object))
     Dim mpls As New List(Of MediaPlayer)
     Dim sound As Media
-    Dim title_fullscreen As New Label
-    Dim txt As New Label
-    Dim lct As New Label
-    Dim description As New Label
+    Dim title_fullscreen As New dbLabel
+    Dim txt As New dbLabel
+    Dim lct As New dbLabel
+    Dim description As New dbLabel
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -168,7 +176,7 @@ Public Class Form1
     End Property
 
     Async Sub setStoryListTitle()
-        txt_StoryLsTitle = "選擇故事"
+        txt_StoryLsTitle = "選擇視覺小說"
         StoryListTitle.Text = ""
 
         Await Task.Run(
@@ -773,6 +781,14 @@ Public Class Form1
 
     Private Sub chapterBtnClick(sender As Button, e As EventArgs)
         '閱覽劇情的功能.
+        isLoadingStory = True
+
+        For Each ctrl As Control In chapterTableList(storyTableCurrentIndex).Controls
+            If ctrl.Visible Then
+                ctrl.Enabled = False
+            End If
+        Next
+
         Dim script As String() = File.ReadAllLines(storyLs(storyTableCurrentIndex) + "\" + sender.Text + "\script.txt")
 
         'Check script
@@ -788,246 +804,277 @@ Public Class Form1
     End Sub
 
     Private Async Sub loadScript(script As String(), chapterPath As String)
+        title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
+        title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
+        title_fullscreen.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
+        title_fullscreen.ForeColor = Drawing.Color.White
+        title_fullscreen.BackColor = Drawing.Color.Transparent
+        title_fullscreen.Hide()
 
-        For Each ctrl As Control In Me.Controls()
-            If ctrl.Visible Then
-                ctrl.Hide()
-                ctrl.Enabled = False
-            End If
-        Next
+        txt.Anchor = Drawing.ContentAlignment.BottomCenter
+        txt.TextAlign = Drawing.ContentAlignment.TopLeft
+        txt.Font = New Font(pfc.Families(0), 18, FontStyle.Bold)
+        txt.ForeColor = Drawing.Color.FromArgb(47, 62, 105)
+        txt.BackColor = Drawing.Color.FromArgb(230, 255, 255, 255)
+        txt.Padding = New Padding(20, 20, 20, 20)
+        txt.Hide()
 
-        Dim scriptLs = script.ToList()
+        description.TextAlign = Drawing.ContentAlignment.MiddleCenter
+        description.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+        description.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
+        description.BackColor = Drawing.Color.FromArgb(200, 136, 127, 153)
+        description.Padding = New Padding(20, 20, 20, 20)
+        description.Hide()
 
-        For Each cmd As String In script
-            Dim key = cmd.Split(" ")(0)
+        lct.TextAlign = Drawing.ContentAlignment.MiddleCenter
+        lct.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+        lct.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
+        lct.BackColor = Drawing.Color.FromArgb(66, 68, 99)
+        lct.Padding = New Padding(3, 3, 3, 3)
+        lct.Hide()
 
-            title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
-            title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
-            title_fullscreen.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
-            title_fullscreen.ForeColor = Drawing.Color.White
-            title_fullscreen.BackColor = Drawing.Color.Transparent
-            title_fullscreen.Hide()
+        Me.Controls.Add(title_fullscreen)
+        Me.Controls.Add(txt)
+        Me.Controls.Add(description)
+        Me.Controls.Add(lct)
 
-            txt.Anchor = Drawing.ContentAlignment.BottomCenter
-            txt.TextAlign = Drawing.ContentAlignment.TopLeft
-            txt.Font = New Font(pfc.Families(0), 18, FontStyle.Bold)
-            txt.ForeColor = Drawing.Color.FromArgb(47, 62, 105)
-            txt.BackColor = Drawing.Color.FromArgb(230, 255, 255, 255)
-            txt.Padding = New Padding(20, 20, 20, 20)
-            txt.Hide()
+        Await Task.Run(
+            Sub()
+                Dim scriptLs = script.ToList()
 
-            description.TextAlign = Drawing.ContentAlignment.MiddleCenter
-            description.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
-            description.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
-            description.BackColor = Drawing.Color.FromArgb(200, 136, 127, 153)
-            description.Padding = New Padding(20, 20, 20, 20)
-            description.Hide()
+                For Each cmd As String In script
+                    Dim key = cmd.Split(" ")(0)
 
-            Me.Controls.Add(title_fullscreen)
-            Me.Controls.Add(txt)
-            Me.Controls.Add(description)
+                    Select Case key
+                        Case "background"
+                            Dim fileName = cmd.Split(" ")(1)
+                            Dim img
 
-            Select Case key
-                Case "background"
-                    Dim fileName = cmd.Split(" ")(1)
-                    If Not supportedImgFormat.Contains(Path.GetExtension(fileName)) Then
-                        cmdQueue.Enqueue(
-                            Function() As Object
-                                Me.BackgroundImage = Drawing.Image.FromFile(imgConverter(chapterPath + "\" + fileName))
-                                Return 0
-                            End Function)
-                    Else
-                        cmdQueue.Enqueue(
-                            Function() As Object
-                                Me.BackgroundImage = Drawing.Image.FromFile(chapterPath + "\" + fileName)
-                                Return 0
-                            End Function)
-                    End If
-                Case "character"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 2
-                        End Function)
-                Case "title_fullscreen"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            isDisplayingEffect = True
-
-                            title_fullscreen.Text = ""
-                            title_fullscreen.Width = Me.ClientSize.Width * 0.7
-                            title_fullscreen.Height = Me.ClientSize.Height * 0.7
-                            title_fullscreen.Location = center(title_fullscreen)
-                            title_fullscreen.Show()
-
-                            Task.Run(
-                                Sub()
-                                    Dim t = ""
-                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
-
-                                    For Each row As String In splcmd.SkipLast(1)
-                                        If row = " " Then
-                                            t += vbCrLf
-                                        Else
-                                            t += row
-                                        End If
-                                    Next
-
-                                    t += splcmd.Last()
-
-                                    For i = 0 To t.Length - 1
-                                        If stopEffect Then
-                                            'MsgBox("stop")
-                                            title_fullscreen.Text = t
-                                            stopEffect = False
-                                            Exit For
-                                        Else
-                                            title_fullscreen.Text += t(i)
-                                            Thread.Sleep(100)
-                                        End If
-                                    Next
-                                    isDisplayingEffect = False
-                                End Sub)
-                            Return 1
-                        End Function)
-                Case "txt"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            isDisplayingEffect = True
-
-                            txt.Text = ""
-                            txt.Width = Me.ClientSize.Width * 0.8
-                            txt.Height = Me.ClientSize.Height * 0.28
-                            txt.Location = New Drawing.Point(Me.ClientSize.Width * 0.1, Me.ClientSize.Height * 0.7)
-                            txt.Show()
-
-                            Task.Run(
-                                Sub()
-                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
-                                    Dim name = "[ " + splcmd(0) + " ]" + vbCrLf + vbCrLf
-                                    Dim t = ""
-
-                                    For Each row As String In splcmd.Skip(2).SkipLast(1)
-                                        If row = " " Then
-                                            t += vbCrLf
-                                        Else
-                                            t += row
-                                        End If
-                                    Next
-
-                                    t += splcmd.Last()
-
-                                    txt.Text = name
-
-                                    For i = 0 To t.Length - 1
-                                        If stopEffect Then
-                                            'MsgBox("stop")
-                                            txt.Text = name + t
-                                            stopEffect = False
-                                            Exit For
-                                        Else
-                                            txt.Text += t(i)
-                                            Thread.Sleep(50)
-                                        End If
-                                    Next
-                                    isDisplayingEffect = False
-                                End Sub)
-
-                            If scriptLs(scriptLs.FindIndex(Function(value As String) value = cmd) + 1).Split(" ")(0) = "sound" Then
-                                Return 1
+                            If Not supportedImgFormat.Contains(Path.GetExtension(fileName)) Then
+                                img = imgConverter(chapterPath + "\" + fileName)
                             Else
-                                Return 3
+                                img = chapterPath + "\" + fileName
                             End If
-                        End Function)
-                Case "description"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Dim splcmd = cmd.Split(Chr(34)).Skip(1)
-                            description.Height = Me.ClientSize.Height * 0.1
-                            description.Location = center(description)
-                            description.Text = splcmd(0)
-                            description.Show()
 
-                            Task.Run(
-                                Sub()
-                                    For w = 0 To Me.ClientSize.Width * 0.5 Step 20
-                                        description.Width = w
-                                        description.Location = center(description)
-                                    Next
-                                End Sub)
-                            Return 3
-                        End Function)
-                Case "location"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "sound"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Dim media = New Media(libvlc, chapterPath + "\" + cmd.Split(" ")(1))
-                            mpls(2).Media = media
-                            mpls(2).Play()
-                            'MsgBox(key(1))
-                            Return 3
-                        End Function)
-                Case "music"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Dim media = New Media(libvlc_repeat, chapterPath + "\" + cmd.Split(" ")(1))
-                            mpls(0).Media = media
-                            mpls(0).Play()
-                            Return 0
-                        End Function)
-                Case "stopmusic"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            mpls(0).Stop()
-                            Return 0
-                        End Function)
-                Case "fade_white"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            'fadeScreen.Show()
-                            Return 0
-                        End Function)
-                Case "fade_black"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "flash"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "hide_left"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "hide_right"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "hide_center"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "video"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-                Case "exit"
-                    cmdQueue.Enqueue(
-                        Function() As Object
-                            Return 0
-                        End Function)
-            End Select
-        Next
-        'MsgBox("finished loading.")
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Me.BackgroundImage = Nothing
+                                    Me.BackgroundImage = Drawing.Image.FromFile(img)
+                                    Return 0
+                                End Function)
+                        Case "character"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 2
+                                End Function)
+                        Case "title_fullscreen"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Me.BackgroundImage = Nothing
+                                    isDisplayingEffect = True
+
+                                    title_fullscreen.Text = ""
+                                    title_fullscreen.Width = Me.ClientSize.Width * 0.7
+                                    title_fullscreen.Height = Me.ClientSize.Height * 0.7
+                                    title_fullscreen.Location = center(title_fullscreen)
+                                    title_fullscreen.Show()
+
+                                    Task.Run(
+                                        Sub()
+                                            Dim t = ""
+                                            Dim splcmd = cmd.Split(Chr(34)).Skip(1)
+
+                                            For Each row As String In splcmd.SkipLast(1)
+                                                If row = " " Then
+                                                    t += vbCrLf
+                                                Else
+                                                    t += row
+                                                End If
+                                            Next
+
+                                            t += splcmd.Last()
+
+                                            For i = 0 To t.Length - 1
+                                                If stopEffect Then
+                                                    'MsgBox("stop")
+                                                    title_fullscreen.Text = t
+                                                    stopEffect = False
+                                                    Exit For
+                                                Else
+                                                    title_fullscreen.Text += t(i)
+                                                    Thread.Sleep(100)
+                                                End If
+                                            Next
+                                            isDisplayingEffect = False
+                                        End Sub)
+                                    Return 1
+                                End Function)
+                        Case "txt"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    isDisplayingEffect = True
+
+                                    txt.Text = ""
+                                    txt.Width = Me.ClientSize.Width * 0.8
+                                    txt.Height = Me.ClientSize.Height * 0.28
+                                    txt.Location = New Drawing.Point(Me.ClientSize.Width * 0.1, Me.ClientSize.Height * 0.7)
+                                    txt.Show()
+
+                                    Task.Run(
+                                        Sub()
+                                            Dim splcmd = cmd.Split(Chr(34)).Skip(1)
+                                            Dim name = "[ " + splcmd(0) + " ]" + vbCrLf + vbCrLf
+                                            Dim t = ""
+
+                                            For Each row As String In splcmd.Skip(2).SkipLast(1)
+                                                If row = " " Then
+                                                    t += vbCrLf
+                                                Else
+                                                    t += row
+                                                End If
+                                            Next
+
+                                            t += splcmd.Last()
+
+                                            txt.Text = name
+
+                                            For i = 0 To t.Length - 1
+                                                If stopEffect Then
+                                                    'MsgBox("stop")
+                                                    txt.Text = name + t
+                                                    stopEffect = False
+                                                    Exit For
+                                                Else
+                                                    txt.Text += t(i)
+                                                    Thread.Sleep(50)
+                                                End If
+                                            Next
+                                            isDisplayingEffect = False
+                                        End Sub)
+
+                                    If scriptLs(scriptLs.FindIndex(Function(value As String) value = cmd) + 1).Split(" ")(0) = "sound" Then
+                                        Return 1
+                                    Else
+                                        If mpls(2).IsPlaying Then
+                                            mpls(2).Stop()
+                                        End If
+                                        Return 3
+                                    End If
+                                End Function)
+                        Case "description"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    If mpls(2).IsPlaying Then
+                                        mpls(2).Stop()
+                                    End If
+
+                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
+                                    description.Height = Me.ClientSize.Height * 0.1
+                                    description.Location = center(description)
+                                    description.Text = splcmd(0)
+                                    description.Show()
+
+                                    Task.Run(
+                                        Sub()
+                                            For w = 0 To Me.ClientSize.Width * 0.5 Step 20
+                                                description.Width = w
+                                                description.Location = center(description)
+                                            Next
+                                        End Sub)
+                                    Return 3
+                                End Function)
+                        Case "location"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Dim splcmd = cmd.Split(Chr(34)).Skip(1)
+                                    lct.Height = 50
+                                    lct.Width = Me.ClientSize.Width / 5
+                                    lct.Text = splcmd(0)
+                                    lct.Show()
+
+                                    Task.Run(
+                                        Sub()
+                                            For i = -lct.Width To 50 Step 2
+                                                lct.Location = New Drawing.Point(i, 50)
+                                            Next
+                                            lct.Location = New Drawing.Point(50, 50)
+                                            Thread.Sleep(5000)
+                                            For i = 50 To -lct.Width Step -2
+                                                lct.Location = New Drawing.Point(i, 50)
+                                            Next
+                                        End Sub)
+
+                                    Return 0
+                                End Function)
+                        Case "sound"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Dim media = New Media(libvlc, chapterPath + "\" + cmd.Split(" ")(1))
+                                    mpls(2).Media = media
+                                    mpls(2).Play()
+                                    'MsgBox(key(1))
+                                    Return 3
+                                End Function)
+                        Case "music"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Dim media = New Media(libvlc_repeat, chapterPath + "\" + cmd.Split(" ")(1))
+                                    mpls(0).Media = media
+                                    mpls(0).Play()
+                                    Return 0
+                                End Function)
+                        Case "stopmusic"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    mpls(0).Stop()
+                                    Return 0
+                                End Function)
+                        Case "fade_white"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    'fadeScreen.Show()
+                                    Return 0
+                                End Function)
+                        Case "fade_black"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "flash"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "hide_left"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "hide_right"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "hide_center"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "video"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                        Case "exit"
+                            cmdQueue.Enqueue(
+                                Function() As Object
+                                    Return 0
+                                End Function)
+                    End Select
+                Next
+                'MsgBox("finished loading.")
+            End Sub)
+
 
         Await Task.Run(
             Sub()
@@ -1043,8 +1090,17 @@ Public Class Form1
             End Sub)
 
         Me.BackgroundImage = Nothing
+
+        For Each ctrl As Control In Me.Controls()
+            If ctrl.Visible Then
+                ctrl.Hide()
+                ctrl.Enabled = False
+            End If
+        Next
+
         fadeScreen.Hide()
         mpls(0).Stop()
+        isLoadingStory = False
         isDisplayingStory = True
         Thread.Sleep(300)
         displayStory()
