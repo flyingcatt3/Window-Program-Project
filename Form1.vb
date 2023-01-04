@@ -98,6 +98,7 @@ Public Class Form1
     Dim isDisplayingStory As Boolean = False
     Dim isDisplayingEffect As Boolean = False
     Dim stopEffect As Boolean = False
+    Dim isFading As Boolean = False
     Dim btnSwitchStoryL As New switchStoryBtn
     Dim btnSwitchStoryR As New switchStoryBtn
     Dim tmpStoryLs As New List(Of String)
@@ -260,7 +261,7 @@ Public Class Form1
         'Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
 
         AddHandler Start.Click, AddressOf ButtonClick
-        AddHandler Start.GotFocus, AddressOf ButtonCursor
+        AddHandler Start.MouseHover, AddressOf ButtonCursor
         AddHandler title_fullscreen.Click, AddressOf displayStory
         AddHandler txt.Click, AddressOf displayStory
 
@@ -445,7 +446,7 @@ Public Class Form1
 
                     AddHandler chapterBtn.Click, AddressOf ButtonClick
                     AddHandler chapterBtn.Click, AddressOf chapterBtnClick
-                    AddHandler chapterBtn.GotFocus, AddressOf ButtonCursor
+                    AddHandler chapterBtn.MouseHover, AddressOf ButtonCursor
 
                     chapterTable.Controls.Add(chapterBtn)
 
@@ -454,7 +455,7 @@ Public Class Form1
 
             AddHandler storyBtn.Click, AddressOf storyBtnClick
             AddHandler storyBtn.Click, AddressOf ButtonClick
-            AddHandler storyBtn.GotFocus, AddressOf ButtonCursor
+            AddHandler storyBtn.MouseHover, AddressOf ButtonCursor
 
             storyTable.Controls.Add(storyBtn, 0, 0)
             storyTable.Controls.Add(storyName, 0, 1)
@@ -597,6 +598,9 @@ Public Class Form1
             txt.Width = Me.ClientSize.Width * 0.8
             txt.Height = Me.ClientSize.Height * 0.28
             txt.Location = New Drawing.Point(Me.ClientSize.Width * 0.1, Me.ClientSize.Height * 0.7)
+
+            description.Height = Me.ClientSize.Height * 0.1
+            description.Location = center(description)
         End If
 
     End Sub
@@ -734,10 +738,10 @@ Public Class Form1
 
             AddHandler btnSwitchStoryL.Click, AddressOf ButtonClick
             AddHandler btnSwitchStoryL.Click, AddressOf btnSwitchStoryClick
-            AddHandler btnSwitchStoryL.GotFocus, AddressOf ButtonCursor
+            AddHandler btnSwitchStoryL.MouseHover, AddressOf ButtonCursor
             AddHandler btnSwitchStoryR.Click, AddressOf ButtonClick
             AddHandler btnSwitchStoryR.Click, AddressOf btnSwitchStoryClick
-            AddHandler btnSwitchStoryR.GotFocus, AddressOf ButtonCursor
+            AddHandler btnSwitchStoryR.MouseHover, AddressOf ButtonCursor
 
             Me.Controls.Add(btnSwitchStoryL)
             Me.Controls.Add(btnSwitchStoryR)
@@ -858,8 +862,14 @@ Public Class Form1
 
                             cmdQueue.Enqueue(
                                 Function() As Object
-                                    Me.BackgroundImage = Nothing
-                                    Me.BackgroundImage = Drawing.Image.FromFile(img)
+                                    Task.Run(
+                                        Sub()
+                                            Do Until Not isFading
+                                                Thread.Sleep(50)
+                                            Loop
+                                            Me.BackgroundImage = Nothing
+                                            Me.BackgroundImage = Drawing.Image.FromFile(img)
+                                        End Sub)
                                     Return 0
                                 End Function)
                         Case "character"
@@ -968,6 +978,8 @@ Public Class Form1
                                         mpls(2).Stop()
                                     End If
 
+                                    isDisplayingEffect = True
+
                                     Dim splcmd = cmd.Split(Chr(34)).Skip(1)
                                     description.Height = Me.ClientSize.Height * 0.1
                                     description.Location = center(description)
@@ -980,6 +992,7 @@ Public Class Form1
                                                 description.Width = w
                                                 description.Location = center(description)
                                             Next
+                                            isDisplayingEffect = False
                                         End Sub)
                                     Return 3
                                 End Function)
@@ -1011,7 +1024,15 @@ Public Class Form1
                                 Function() As Object
                                     Dim media = New Media(libvlc, chapterPath + "\" + cmd.Split(" ")(1))
                                     mpls(2).Media = media
-                                    mpls(2).Play()
+
+                                    Task.Run(
+                                        Sub()
+                                            Do Until Not isFading
+                                                Thread.Sleep(50)
+                                            Loop
+                                            mpls(2).Play()
+                                        End Sub)
+
                                     'MsgBox(key(1))
                                     Return 3
                                 End Function)
@@ -1032,17 +1053,93 @@ Public Class Form1
                         Case "fade_white"
                             cmdQueue.Enqueue(
                                 Function() As Object
-                                    'fadeScreen.Show()
+                                    isFading = True
+                                    fadeScreen.Show()
+                                    Task.Run(
+                                        Sub()
+                                            Dim fadeColor = 0
+
+                                            fadeScreen.BringToFront()
+                                            fadeScreen.BackColor = Drawing.Color.FromArgb(0, 255, 255, 255)
+
+                                            While CBool(255 - fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
+                                                fadeColor += 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            isFading = False
+
+                                            While CBool(fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
+                                                fadeColor -= 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            fadeScreen.Hide()
+                                        End Sub)
                                     Return 0
                                 End Function)
                         Case "fade_black"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    isFading = True
+                                    fadeScreen.Show()
+                                    Task.Run(
+                                        Sub()
+                                            Dim fadeColor = 0
+
+                                            fadeScreen.BringToFront()
+                                            fadeScreen.BackColor = Drawing.Color.FromArgb(0, 0, 0, 0)
+
+                                            While CBool(255 - fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                                                fadeColor += 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            isFading = False
+
+                                            While CBool(fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                                                fadeColor -= 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            fadeScreen.Hide()
+                                        End Sub)
                                     Return 0
                                 End Function)
                         Case "flash"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    isFading = True
+                                    fadeScreen.Show()
+                                    Task.Run(
+                                        Sub()
+                                            Dim fadeColor = 0
+
+                                            fadeScreen.BringToFront()
+                                            fadeScreen.BackColor = Drawing.Color.FromArgb(0, 255, 255, 255)
+
+                                            While CBool(255 - fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
+                                                fadeColor += 3
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            isFading = False
+                                            fadeColor = 255
+
+                                            While CBool(fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
+                                                fadeColor -= 3
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            fadeScreen.Hide()
+                                        End Sub)
+                                    Return 0
                                     Return 0
                                 End Function)
                         Case "hide_left"
@@ -1085,7 +1182,7 @@ Public Class Form1
                 While CBool(255 - fadeColor)
                     fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
                     fadeColor += 1
-                    Thread.Sleep(1)
+                    Thread.Sleep(2)
                 End While
             End Sub)
 
@@ -1102,7 +1199,7 @@ Public Class Form1
         mpls(0).Stop()
         isLoadingStory = False
         isDisplayingStory = True
-        Thread.Sleep(300)
+        'Thread.Sleep(300)
         displayStory()
     End Sub
 
