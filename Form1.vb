@@ -277,7 +277,7 @@ Public Class Form1
         mp.FileCaching = 10
         mpSS.FileCaching = 10
 
-        mp.Volume = 60
+        mp.Volume = 70
         mp.Play()
 
         mpls.Add(mp)
@@ -293,8 +293,10 @@ Public Class Form1
         Me.ver.Text = "v" + System.IO.File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location).ToString("yyyyMMdd")
 
         pfc.AddFontFile(gamePath + "TaipeiSansTCBeta-Regular.ttf")
+        pfc.AddFontFile(gamePath + "ChenYuluoyan-Thin.ttf")
         Start.Font = New Font(pfc.Families(0), 36, FontStyle.Bold)
-        GameTitle.Font = New Font(pfc.Families(0), 54, FontStyle.Bold)
+        GameTitle.Font = New Font(pfc.Families(1), 54, FontStyle.Bold)
+        GameTitle.Text = "視覺化小說遊戲引擎"
 
         'Me.StartLayout.Show()
         'Me.BackgroundImage = Bitmap.FromFile(StoryListBG, Drawing.Imaging.PixelFormat.Format32bppPArgb)
@@ -756,10 +758,8 @@ Public Class Form1
         Dim filesList As New List(Of String)
         Dim errFilesMsg As New List(Of String)
 
-        Dim media = New Media(libvlc, addStorySound)
-        Dim mediaplayer = New MediaPlayer(media)
-        mediaplayer.EnableHardwareDecoding = True
-        mediaplayer.Volume = Math.Sqrt(mediaplayer.Volume) * 10
+        Dim sound = New Media(libvlc, addStorySound)
+        mpls(1).Media = sound
 
         errFilesMsg.Add("處理下列檔案時發生錯誤：" & vbCrLf & vbCrLf)
 
@@ -836,10 +836,10 @@ Public Class Form1
             storyTableList(storyTableCurrentIndex).Show()
             isStoryListEmpty = False
             Me.Controls.Add(storyTableList(0))
-            mediaplayer.Play()
+            mpls(1).Play()
         ElseIf CBool(tmpStoryLs.Count) Then '已經有story
             loadStory()
-            mediaplayer.Play()
+            mpls(1).Play()
         End If
         btnSwitchStoryAdd()
         tmpStoryLs.Clear()
