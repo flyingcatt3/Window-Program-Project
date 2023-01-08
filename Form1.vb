@@ -74,6 +74,17 @@ Public Class Form1
         End Sub
     End Class
 
+    Public Class dbPictureBox
+        Inherits PictureBox
+
+        Public Sub New()
+            DoubleBuffered = True
+            SizeMode = PictureBoxSizeMode.Zoom
+            Visible = False
+            BackColor = Drawing.Color.Transparent
+        End Sub
+    End Class
+
     ReadOnly supportedImgFormat As New List(Of String) From {".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tiff"}
     ReadOnly supportedCmd As New List(Of String) From {"background", "music", "title_fullscreen", "txt", "sound", "character", "fade_white", "fade_black", "flash", "description", "stopmusic", "hide_left", "hide_right", "hide_center", "video", "exit", "location"}
     ReadOnly gamePath = Application.StartupPath
@@ -110,6 +121,16 @@ Public Class Form1
     Dim txt As New dbLabel
     Dim lct As New dbLabel
     Dim description As New dbLabel
+    Dim p1 As New dbPictureBox
+    Dim p2 As New dbPictureBox
+    Dim p3 As New dbPictureBox
+    Dim skipCmdCount As Integer = 0
+    Dim tmpWp1 As Integer
+    Dim tmpWp2 As Integer
+    Dim tmpWp3 As Integer
+    Dim tmpHp1 As Integer
+    Dim tmpHp2 As Integer
+    Dim tmpHp3 As Integer
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -214,8 +235,10 @@ Public Class Form1
     Private Sub GameLoad() Handles MyBase.Load
 
         'https://stackoverflow.com/questions/25872849/to-reduce-flicker-by-double-buffer-setstyle-vs-overriding-createparam
-        'DoubleBuffered = True
-        'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.OptimizedDoubleBuffer, True)
+        DoubleBuffered = True
+        SetStyle(ControlStyles.AllPaintingInWmPaint, True)
+        SetStyle(ControlStyles.UserPaint, True)
+        SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
 
         '開場音樂
         For Each foundFile As String In My.Computer.FileSystem.GetFiles(gamePath + "startBGM")
@@ -264,6 +287,9 @@ Public Class Form1
         AddHandler Start.MouseHover, AddressOf ButtonCursor
         AddHandler title_fullscreen.Click, AddressOf displayStory
         AddHandler txt.Click, AddressOf displayStory
+        AddHandler p1.Click, AddressOf displayStory
+        AddHandler p2.Click, AddressOf displayStory
+        AddHandler p3.Click, AddressOf displayStory
 
         Me.CenterToScreen()
         StartColorCycle()
@@ -506,6 +532,43 @@ Public Class Form1
             storyTableList.Add(storyTable)
         End If
 
+        title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
+        title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
+        title_fullscreen.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
+        title_fullscreen.ForeColor = Drawing.Color.White
+        title_fullscreen.BackColor = Drawing.Color.Transparent
+        title_fullscreen.Hide()
+
+        txt.Anchor = Drawing.ContentAlignment.BottomCenter
+        txt.TextAlign = Drawing.ContentAlignment.TopLeft
+        txt.Font = New Font(pfc.Families(0), 18, FontStyle.Bold)
+        txt.ForeColor = Drawing.Color.FromArgb(47, 62, 105)
+        txt.BackColor = Drawing.Color.FromArgb(230, 255, 255, 255)
+        txt.Padding = New Padding(20, 20, 20, 20)
+        txt.Hide()
+
+        description.TextAlign = Drawing.ContentAlignment.MiddleCenter
+        description.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+        description.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
+        description.BackColor = Drawing.Color.FromArgb(200, 136, 127, 153)
+        description.Padding = New Padding(20, 20, 20, 20)
+        description.Hide()
+
+        lct.TextAlign = Drawing.ContentAlignment.MiddleCenter
+        lct.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
+        lct.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
+        lct.BackColor = Drawing.Color.FromArgb(66, 68, 99)
+        lct.Padding = New Padding(3, 3, 3, 3)
+        lct.Hide()
+
+        Me.Controls.Add(title_fullscreen)
+        Me.Controls.Add(txt)
+        Me.Controls.Add(description)
+        Me.Controls.Add(lct)
+        Me.Controls.Add(p1)
+        Me.Controls.Add(p2)
+        Me.Controls.Add(p3)
+
     End Sub
 
     Private Sub ChooseStory()
@@ -601,8 +664,40 @@ Public Class Form1
 
             description.Height = Me.ClientSize.Height * 0.1
             description.Location = center(description)
-        End If
 
+            Dim y = Me.ClientSize.Height * 0.15
+            Dim h = Me.ClientSize.Height * 0.85
+
+            If p1.Height * 0.6 < h Then
+                p1.Width = p1.Width * (1 + (h - p1.Height * 0.6) / h)
+                p1.Height = p1.Height * (1 + (h - p1.Height * 0.6) / h)
+            Else
+                p1.Width = tmpWp1
+                p1.Height = tmpHp1
+            End If
+
+            p1.Location = New Drawing.Point(Me.ClientSize.Width * 0.5 - p1.Width, y)
+
+            If p2.Height * 0.6 < h Then
+                p2.Width = p2.Width * (1 + (h - p2.Height * 0.6) / h)
+                p2.Height = p2.Height * (1 + (h - p2.Height * 0.6) / h)
+            Else
+                p2.Width = tmpWp2
+                p2.Height = tmpHp2
+            End If
+
+            p2.Location = New Drawing.Point((Me.ClientSize.Width - p2.Width) * 0.5, y)
+
+            If p3.Height * 0.6 < h Then
+                p3.Width = p3.Width * (1 + (h - p3.Height * 0.6) / h)
+                p3.Height = p3.Height * (1 + (h - p3.Height * 0.6) / h)
+            Else
+                p3.Width = tmpWp3
+                p3.Height = tmpHp3
+            End If
+
+            p3.Location = New Drawing.Point(Me.ClientSize.Width * 0.5, y)
+        End If
     End Sub
 
     Private Sub suspendScreen() Handles Me.ResizeBegin
@@ -808,40 +903,6 @@ Public Class Form1
     End Sub
 
     Private Async Sub loadScript(script As String(), chapterPath As String)
-        title_fullscreen.Anchor = Drawing.ContentAlignment.MiddleLeft
-        title_fullscreen.TextAlign = Drawing.ContentAlignment.MiddleLeft
-        title_fullscreen.Font = New Font(pfc.Families(0), 32, FontStyle.Bold)
-        title_fullscreen.ForeColor = Drawing.Color.White
-        title_fullscreen.BackColor = Drawing.Color.Transparent
-        title_fullscreen.Hide()
-
-        txt.Anchor = Drawing.ContentAlignment.BottomCenter
-        txt.TextAlign = Drawing.ContentAlignment.TopLeft
-        txt.Font = New Font(pfc.Families(0), 18, FontStyle.Bold)
-        txt.ForeColor = Drawing.Color.FromArgb(47, 62, 105)
-        txt.BackColor = Drawing.Color.FromArgb(230, 255, 255, 255)
-        txt.Padding = New Padding(20, 20, 20, 20)
-        txt.Hide()
-
-        description.TextAlign = Drawing.ContentAlignment.MiddleCenter
-        description.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
-        description.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
-        description.BackColor = Drawing.Color.FromArgb(200, 136, 127, 153)
-        description.Padding = New Padding(20, 20, 20, 20)
-        description.Hide()
-
-        lct.TextAlign = Drawing.ContentAlignment.MiddleCenter
-        lct.Font = New Font(pfc.Families(0), 20, FontStyle.Bold)
-        lct.ForeColor = Drawing.Color.FromArgb(255, 255, 255)
-        lct.BackColor = Drawing.Color.FromArgb(66, 68, 99)
-        lct.Padding = New Padding(3, 3, 3, 3)
-        lct.Hide()
-
-        Me.Controls.Add(title_fullscreen)
-        Me.Controls.Add(txt)
-        Me.Controls.Add(description)
-        Me.Controls.Add(lct)
-
         Await Task.Run(
             Sub()
                 Dim scriptLs = script.ToList()
@@ -851,13 +912,13 @@ Public Class Form1
 
                     Select Case key
                         Case "background"
-                            Dim fileName = cmd.Split(" ")(1)
+                            Dim imgPath = chapterPath + "\" + cmd.Split(" ")(1)
                             Dim img
 
-                            If Not supportedImgFormat.Contains(Path.GetExtension(fileName)) Then
-                                img = imgConverter(chapterPath + "\" + fileName)
+                            If Not supportedImgFormat.Contains(Path.GetExtension(imgPath)) Then
+                                img = imgConverter(imgPath)
                             Else
-                                img = chapterPath + "\" + fileName
+                                img = imgPath
                             End If
 
                             cmdQueue.Enqueue(
@@ -875,6 +936,87 @@ Public Class Form1
                         Case "character"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    Dim imgPath = chapterPath + "\" + cmd.Split(" ")(1)
+                                    Dim location = cmd.Split(" ")(2)
+                                    Dim img = Drawing.Image.FromFile(imgPath)
+                                    Dim y = Me.ClientSize.Height * 0.15
+                                    Dim h = Me.ClientSize.Height * 0.85
+                                    Dim index = scriptLs.FindIndex(Function(value As String) value = cmd) + 1
+                                    Dim tmpQ As New Queue(Of Func(Of Object))
+
+                                    Select Case location
+                                        Case "left"
+                                            p2.Hide()
+                                            p2.Image = Nothing
+
+                                            p1.ImageLocation = imgPath
+
+                                            p1.Width = img.Width * (1 + (h - img.Height * 0.6) / h)
+                                            p1.Height = img.Height * (1 + (h - img.Height * 0.6) / h)
+
+                                            tmpWp1 = img.Width
+                                            tmpHp1 = img.Height
+
+                                            p1.Location = New Drawing.Point(Me.ClientSize.Width * 0.5 - p1.Width, y)
+                                            p1.Show()
+
+                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "left"
+                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
+                                                skipCmdCount += 1
+                                                index += 1
+                                            End While
+                                        Case "center"
+                                            p1.Hide()
+                                            p3.Hide()
+                                            p1.Image = Nothing
+                                            p3.Image = Nothing
+
+                                            p2.ImageLocation = imgPath
+
+                                            p2.Width = img.Width * (1 + (h - img.Height * 0.6) / h)
+                                            p2.Height = img.Height * (1 + (h - img.Height * 0.6) / h)
+
+                                            tmpWp2 = img.Width
+                                            tmpHp2 = img.Height
+
+                                            p2.Location = New Drawing.Point((Me.ClientSize.Width - p2.Width) * 0.5, y)
+                                            p2.Show()
+
+                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "center"
+                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
+                                                skipCmdCount += 1
+                                                index += 1
+                                            End While
+                                        Case "right"
+                                            p2.Hide()
+                                            p2.Image = Nothing
+
+                                            p3.ImageLocation = imgPath
+
+                                            p3.Width = img.Width * (1 + (h - img.Height * 0.6) / h)
+                                            p3.Height = img.Height * (1 + (h - img.Height * 0.6) / h)
+
+                                            tmpWp3 = img.Width
+                                            tmpHp3 = img.Height
+
+                                            p3.Location = New Drawing.Point(Me.ClientSize.Width * 0.5, y)
+                                            p3.Show()
+
+                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "right"
+                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
+                                                skipCmdCount += 1
+                                                index += 1
+                                            End While
+                                    End Select
+
+                                    Task.Run(
+                                        Sub()
+                                            While tmpQ.Count
+                                                Thread.Sleep(2500)
+                                                tmpQ(0)()
+                                                tmpQ.Dequeue()
+                                            End While
+                                        End Sub)
                                     Return 2
                                 End Function)
                         Case "title_fullscreen"
@@ -977,6 +1119,13 @@ Public Class Form1
                                     If mpls(2).IsPlaying Then
                                         mpls(2).Stop()
                                     End If
+
+                                    p1.Hide()
+                                    p2.Hide()
+                                    p3.Hide()
+                                    p1.Image = Nothing
+                                    p2.Image = Nothing
+                                    p3.Image = Nothing
 
                                     isDisplayingEffect = True
 
@@ -1145,16 +1294,19 @@ Public Class Form1
                         Case "hide_left"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    p1.Hide()
                                     Return 0
                                 End Function)
                         Case "hide_right"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    p3.Hide()
                                     Return 0
                                 End Function)
                         Case "hide_center"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    p2.Hide()
                                     Return 0
                                 End Function)
                         Case "video"
@@ -1231,6 +1383,10 @@ Public Class Form1
                             Exit Do
                         Case 2
                             cmdQueue.Dequeue()
+                            While skipCmdCount
+                                cmdQueue.Dequeue()
+                                skipCmdCount -= 1
+                            End While
                         Case 3
                             cmdQueue.Dequeue()
                             Exit Do
