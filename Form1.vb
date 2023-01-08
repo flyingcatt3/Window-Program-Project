@@ -1464,7 +1464,7 @@ Public Class Form1
 
                                             Me.Text = "選擇視覺小說 - Visual Novel Engine"
                                             setStoryListTitle()
-
+                                            Me.AllowDrop = True
                                             stopEffect = False
                                         End Sub)
                                     Return 0
