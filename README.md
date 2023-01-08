@@ -10,7 +10,7 @@ https://dotnet.microsoft.com/en-us/download/dotnet/7.0
 
 https://drive.google.com/drive/u/0/folders/1TorQdqLAHGfag942-va0NX78k4ut9pHt?usp=share_link
 
-### 3. 下載故事壓縮檔，拖曳到遊戲內(不用解壓)
+### 3. 下載視覺小說壓縮檔，拖曳到遊戲內(不用解壓)
 
 https://drive.google.com/drive/folders/17RbQoWEW4N9vYSJp0UlB9mfCZtHVbqxY?usp=share_link
 
