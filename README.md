@@ -17,14 +17,12 @@ https://drive.google.com/drive/folders/17RbQoWEW4N9vYSJp0UlB9mfCZtHVbqxY?usp=sha
 可以亂丟檔案，程式會顯示錯誤訊息，不會掛掉.
 
 ***
-## 進度
-
-90%
-
-to-do:
+## 未來可能會填的坑
 
 1. 設定音量.語言
 
 2. 顯示目前時間
 
-3. 遊戲名
+3. 儲存遊玩進度
+
+4. 完成 `video` 指令實作
