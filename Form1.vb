@@ -1,4 +1,16 @@
-﻿Imports SixLabors.ImageSharp
+﻿'=================================================================
+
+'                           GitHub
+
+'   https://github.com/flyingcatt3/Window-Program-Project
+
+'   這個專案使用 .NET 7.0 和 VS Studio 2022 Preview 進行開發
+
+'=================================================================
+
+
+
+Imports SixLabors.ImageSharp
 Imports System.Drawing.Text
 Imports System.IO
 Imports LibVLCSharp.Shared
@@ -7,6 +19,7 @@ Imports System.IO.Compression
 Imports System.Reflection
 Imports System.Xml
 Imports System.Text
+Imports System.Text.RegularExpressions
 
 Public Class Form1
 
@@ -115,6 +128,7 @@ Public Class Form1
     Dim tmpStoryLs As New List(Of String)
     Dim storyLs As New List(Of String)
     Dim cmdQueue As New Queue(Of Func(Of Object))
+    Dim deQCount As Integer = 0
     Dim mpls As New List(Of MediaPlayer)
     Dim sound As Media
     Dim title_fullscreen As New dbLabel
@@ -172,6 +186,10 @@ Public Class Form1
             Me.Size = tmpWindowSize
         End If
 
+        If isDisplayingStory And e.KeyCode = Keys.Q Then
+            cmdQueue(cmdQueue.Count - 1)()
+            cmdQueue.Clear()
+        End If
     End Sub
 
     Sub setclr(control, a, r, g, b, op, interval)
@@ -246,8 +264,7 @@ Public Class Form1
         Next
 
         '設定3個媒體播放器
-        Dim file As String = startBGM(GetRandom(0, startBGM.Count - 1))
-        Dim media = New Media(libvlc_repeat, file)
+        Dim media = New Media(libvlc_repeat, startBGM(GetRandom(0, startBGM.Count)))
         sound = New Media(libvlc, btnClickSoundPath)
         Dim mp = New MediaPlayer(media)
         Dim mpCS = New MediaPlayer(sound)
@@ -292,6 +309,25 @@ Public Class Form1
         AddHandler p3.Click, AddressOf displayStory
 
         Me.CenterToScreen()
+
+        Me.Controls.Add(fadeScreen)
+        fadeScreen.Show()
+        Task.Run(
+            Sub()
+                Dim fadeColor = 255
+
+                fadeScreen.BringToFront()
+                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+
+                While CBool(fadeColor)
+                    fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                    fadeColor -= 1
+                    Thread.Sleep(1)
+                End While
+
+                fadeScreen.Hide()
+            End Sub)
+
         StartColorCycle()
         ChooseStory_PreLoad()
 
@@ -299,8 +335,7 @@ Public Class Form1
 
     Private Async Sub fadeStartLayout() Handles Start.Click
         Start.Enabled = False
-
-        Me.Controls.Add(fadeScreen)
+        fadeScreen.Show()
 
         Await Task.Run(
             Sub()
@@ -321,7 +356,6 @@ Public Class Form1
         StartLayout.Dispose()
         fadeScreen.Hide()
         ChooseStory()
-
     End Sub
 
     'https://stackoverflow.com/questions/48710165/back-colour-of-button-not-changing-when-updated-in-for-loop
@@ -577,7 +611,7 @@ Public Class Form1
         'imgConverter(StoryListBG)
         '= Drawing.Image.FromFile(converted_imgPath + Path.GetFileNameWithoutExtension(StoryListBG) + ".jpg")
 
-        Me.Text = "選擇故事 - Visual Novel Engine"
+        Me.Text = "選擇視覺小說 - Visual Novel Engine"
         Me.BackColor = Drawing.Color.Black
         Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
         Me.BackgroundImageLayout = ImageLayout.Zoom
@@ -612,8 +646,10 @@ Public Class Form1
                 btnSwitchStoryR.Size = New Drawing.Size(Me.ClientSize.Width * 0.05, Me.ClientSize.Height * 0.2)
                 For Each table In storyTableList
                     table.Size = New Drawing.Size(Me.ClientSize.Width * 0.8, Me.ClientSize.Width / 10 * 3)
-                    table.Controls.Item(1).Size = New Drawing.Size(table.Width, table.Height / 3)
-                    table.Controls.Item(0).Size = New Drawing.Size(table.Width, table.Controls.Item(1).Height * 2)
+                    If Not isStoryListEmpty Then
+                        table.Controls.Item(1).Size = New Drawing.Size(table.Width, table.Height / 3)
+                        table.Controls.Item(0).Size = New Drawing.Size(table.Width, table.Controls.Item(1).Height * 2)
+                    End If
                     table.Location = center(table)
                 Next
                 For Each table In chapterTableList
@@ -866,6 +902,7 @@ Public Class Form1
     End Sub
 
     Private Sub storyBtnClick()
+        Me.Text = "選擇章節 - Visual Novel Engine"
         If My.Computer.FileSystem.GetDirectories(storyLs(storyTableCurrentIndex)).Count Then
             Me.AllowDrop = False
             txt_StoryLsTitle = "選擇章節"
@@ -873,9 +910,22 @@ Public Class Form1
             btnSwitchStoryL.Hide()
             btnSwitchStoryR.Hide()
             chapterTableList(storyTableCurrentIndex).Show()
+
         Else
             MsgBox("在該故事的目錄中找不到任何章節(資料夾)。", vbCritical, "Error")
         End If
+
+        For Each ctrl As Control In chapterTableList
+            If ctrl.Visible Then
+                ctrl.Enabled = True
+            End If
+        Next
+
+        For Each ctrl As Control In chapterTableList(storyTableCurrentIndex).Controls
+            If ctrl.Visible Then
+                ctrl.Enabled = True
+            End If
+        Next
     End Sub
 
     Private Sub chapterBtnClick(sender As Button, e As EventArgs)
@@ -895,6 +945,12 @@ Public Class Form1
             If Not supportedCmd.Contains(cmd.Split(" ")(0)) Then
                 'MsgBox(cmd.Split(" ")(0))
                 MsgBox("這個章節內的 script.txt 有錯誤，故無法載入該章節.")
+                isLoadingStory = False
+                For Each ctrl As Control In chapterTableList(storyTableCurrentIndex).Controls
+                    If ctrl.Visible Then
+                        ctrl.Enabled = True
+                    End If
+                Next
                 Exit Sub
             End If
         Next
@@ -941,7 +997,8 @@ Public Class Form1
                                     Dim img = Drawing.Image.FromFile(imgPath)
                                     Dim y = Me.ClientSize.Height * 0.15
                                     Dim h = Me.ClientSize.Height * 0.85
-                                    Dim index = scriptLs.FindIndex(Function(value As String) value = cmd) + 1
+                                    Dim idx = scriptLs.FindIndex(Function(value As String) value = cmd) + 1
+                                    Dim i = idx
                                     Dim tmpQ As New Queue(Of Func(Of Object))
 
                                     Select Case location
@@ -960,10 +1017,14 @@ Public Class Form1
                                             p1.Location = New Drawing.Point(Me.ClientSize.Width * 0.5 - p1.Width, y)
                                             p1.Show()
 
-                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "left"
-                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
-                                                skipCmdCount += 1
-                                                index += 1
+                                            While scriptLs(i).Split(" ")(0) = "character"
+                                                If scriptLs(i).Split(" ")(2) = "left" Then
+                                                    skipCmdCount += 1
+                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    i += 1
+                                                Else
+                                                    Exit While
+                                                End If
                                             End While
                                         Case "center"
                                             p1.Hide()
@@ -982,10 +1043,14 @@ Public Class Form1
                                             p2.Location = New Drawing.Point((Me.ClientSize.Width - p2.Width) * 0.5, y)
                                             p2.Show()
 
-                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "center"
-                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
-                                                skipCmdCount += 1
-                                                index += 1
+                                            While scriptLs(i).Split(" ")(0) = "character"
+                                                If scriptLs(i).Split(" ")(2) = "center" Then
+                                                    skipCmdCount += 1
+                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    i += 1
+                                                Else
+                                                    Exit While
+                                                End If
                                             End While
                                         Case "right"
                                             p2.Hide()
@@ -1002,10 +1067,14 @@ Public Class Form1
                                             p3.Location = New Drawing.Point(Me.ClientSize.Width * 0.5, y)
                                             p3.Show()
 
-                                            While scriptLs(index).Split(" ")(0) = "character" And scriptLs(index).Split(" ")(2) = "right"
-                                                tmpQ.Enqueue(cmdQueue(skipCmdCount + 1))
-                                                skipCmdCount += 1
-                                                index += 1
+                                            While scriptLs(i).Split(" ")(0) = "character"
+                                                If scriptLs(i).Split(" ")(2) = "right" Then
+                                                    skipCmdCount += 1
+                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    i += 1
+                                                Else
+                                                    Exit While
+                                                End If
                                             End While
                                     End Select
 
@@ -1017,6 +1086,8 @@ Public Class Form1
                                                 tmpQ.Dequeue()
                                             End While
                                         End Sub)
+
+                                    scriptLs.RemoveAt(idx - 1)
                                     Return 2
                                 End Function)
                         Case "title_fullscreen"
@@ -1202,10 +1273,12 @@ Public Class Form1
                         Case "fade_white"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    Me.Enabled = False
                                     isFading = True
                                     fadeScreen.Show()
                                     Task.Run(
                                         Sub()
+
                                             Dim fadeColor = 0
 
                                             fadeScreen.BringToFront()
@@ -1215,6 +1288,11 @@ Public Class Form1
                                                 fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
                                                 fadeColor += 1
                                                 Thread.Sleep(1)
+                                                If stopEffect Then
+                                                    isFading = False
+                                                    stopEffect = False
+                                                    Exit Sub
+                                                End If
                                             End While
 
                                             isFading = False
@@ -1223,8 +1301,14 @@ Public Class Form1
                                                 fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 255, 255, 255)
                                                 fadeColor -= 1
                                                 Thread.Sleep(1)
+                                                If stopEffect Then
+                                                    isFading = False
+                                                    stopEffect = False
+                                                    Exit Sub
+                                                End If
                                             End While
 
+                                            Me.Enabled = True
                                             fadeScreen.Hide()
                                         End Sub)
                                     Return 0
@@ -1232,6 +1316,7 @@ Public Class Form1
                         Case "fade_black"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    Me.Enabled = False
                                     isFading = True
                                     fadeScreen.Show()
                                     Task.Run(
@@ -1245,6 +1330,11 @@ Public Class Form1
                                                 fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
                                                 fadeColor += 1
                                                 Thread.Sleep(1)
+                                                If stopEffect Then
+                                                    isFading = False
+                                                    stopEffect = False
+                                                    Exit Sub
+                                                End If
                                             End While
 
                                             isFading = False
@@ -1253,8 +1343,14 @@ Public Class Form1
                                                 fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
                                                 fadeColor -= 1
                                                 Thread.Sleep(1)
+                                                If stopEffect Then
+                                                    isFading = False
+                                                    stopEffect = False
+                                                    Exit Sub
+                                                End If
                                             End While
 
+                                            Me.Enabled = True
                                             fadeScreen.Hide()
                                         End Sub)
                                     Return 0
@@ -1262,6 +1358,7 @@ Public Class Form1
                         Case "flash"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    Me.Enabled = False
                                     isFading = True
                                     fadeScreen.Show()
                                     Task.Run(
@@ -1286,9 +1383,9 @@ Public Class Form1
                                                 Thread.Sleep(1)
                                             End While
 
+                                            Me.Enabled = True
                                             fadeScreen.Hide()
                                         End Sub)
-                                    Return 0
                                     Return 0
                                 End Function)
                         Case "hide_left"
@@ -1312,18 +1409,70 @@ Public Class Form1
                         Case "video"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    'I have no time to implement this
                                     Return 0
                                 End Function)
                         Case "exit"
                             cmdQueue.Enqueue(
                                 Function() As Object
+                                    Task.Run(
+                                        Sub()
+                                            stopEffect = True
+
+                                            Me.Enabled = True
+                                            fadeScreen.Show()
+                                            fadeScreen.BringToFront()
+                                            fadeScreen.BackColor = Drawing.Color.FromArgb(0, 0, 0, 0)
+
+                                            Dim fadeColor = 0
+
+                                            While CBool(255 - fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                                                fadeColor += 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            mpls(0).Stop()
+                                            Me.BackgroundImage = Drawing.Image.FromFile(StoryListBG)
+                                            mpls(0).Media = New Media(libvlc_repeat, startBGM(GetRandom(0, startBGM.Count)))
+                                            mpls(0).Play()
+
+                                            While CBool(fadeColor)
+                                                fadeScreen.BackColor = Drawing.Color.FromArgb(fadeColor, 0, 0, 0)
+                                                fadeColor -= 1
+                                                Thread.Sleep(1)
+                                            End While
+
+                                            For Each ctrl As Control In Me.Controls()
+                                                If ctrl.Visible Then
+                                                    ctrl.Hide()
+                                                End If
+                                            Next
+
+                                            storyTableList(storyTableCurrentIndex).Show()
+                                            StoryListTitle.Show()
+                                            If storyTableList.Count > 1 Then
+                                                btnSwitchStoryL.Show()
+                                                btnSwitchStoryR.Show()
+                                            End If
+
+                                            For Each ctrl As Control In Me.Controls()
+                                                If ctrl.Visible Then
+                                                    ctrl.Enabled = True
+                                                End If
+                                            Next
+
+                                            Me.Text = "選擇視覺小說 - Visual Novel Engine"
+                                            setStoryListTitle()
+
+                                            stopEffect = False
+                                        End Sub)
                                     Return 0
                                 End Function)
                     End Select
                 Next
                 'MsgBox("finished loading.")
             End Sub)
-
 
         Await Task.Run(
             Sub()
@@ -1349,14 +1498,19 @@ Public Class Form1
 
         fadeScreen.Hide()
         mpls(0).Stop()
+
         isLoadingStory = False
         isDisplayingStory = True
+
         'Thread.Sleep(300)
+        Me.Text = Path.GetFileNameWithoutExtension(chapterPath) + " - Visual Novel Engine"
+
         displayStory()
     End Sub
 
     Private Sub displayStory() Handles Me.Click
         If isDisplayingStory Then
+            'Avoid Race Condition
             If isDisplayingEffect Then
                 stopEffect = True
                 'MsgBox("stop")
@@ -1376,19 +1530,28 @@ Public Class Form1
                     Select Case cmdQueue(0)()
                         Case 0
                             cmdQueue.Dequeue()
+                            deQCount += 1
+                            'MsgBox(deQCount)
                         Case 1
                             cmdQueue(1)()
                             cmdQueue.Dequeue()
                             cmdQueue.Dequeue()
+                            deQCount += 2
+                            'MsgBox(deQCount)
                             Exit Do
                         Case 2
                             cmdQueue.Dequeue()
+                            deQCount += 1
                             While skipCmdCount
                                 cmdQueue.Dequeue()
                                 skipCmdCount -= 1
+                                deQCount += 1
                             End While
+                            'MsgBox(deQCount)
                         Case 3
                             cmdQueue.Dequeue()
+                            deQCount += 1
+                            'MsgBox(deQCount)
                             Exit Do
                     End Select
                     'MsgBox(cmdQueue.Count)
