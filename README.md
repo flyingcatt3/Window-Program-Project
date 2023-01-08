@@ -19,14 +19,12 @@ https://drive.google.com/drive/folders/17RbQoWEW4N9vYSJp0UlB9mfCZtHVbqxY?usp=sha
 ***
 ## 進度
 
-80%
+90%
 
 to-do:
 
-1. 閱覽故事的功能還沒做完，現在特效、人物圖片還沒弄
+1. 設定音量.語言
 
-2. 設定音量.語言
+2. 顯示目前時間
 
-3. 顯示目前時間
-
-4. 遊戲名
+3. 遊戲名
