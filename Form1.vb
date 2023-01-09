@@ -127,7 +127,9 @@ Public Class Form1
     Dim btnSwitchStoryR As New switchStoryBtn
     Dim tmpStoryLs As New List(Of String)
     Dim storyLs As New List(Of String)
+    Dim scriptLs As New List(Of String)
     Dim cmdQueue As New Queue(Of Func(Of Object))
+    Dim skip As Integer = 0
     Dim deQCount As Integer = 0
     Dim mpls As New List(Of MediaPlayer)
     Dim sound As Media
@@ -138,13 +140,15 @@ Public Class Form1
     Dim p1 As New dbPictureBox
     Dim p2 As New dbPictureBox
     Dim p3 As New dbPictureBox
-    Dim skipCmdCount As Integer = 0
     Dim tmpWp1 As Integer
     Dim tmpWp2 As Integer
     Dim tmpWp3 As Integer
     Dim tmpHp1 As Integer
     Dim tmpHp2 As Integer
     Dim tmpHp3 As Integer
+    Dim tmpQ_left As New Queue(Of Func(Of Object))
+    Dim tmpQ_center As New Queue(Of Func(Of Object))
+    Dim tmpQ_right As New Queue(Of Func(Of Object))
 
     Public Function GetRandom(ByVal Min As Integer, ByVal Max As Integer) As Integer
         ' by making Generator static, we preserve the same instance '
@@ -215,11 +219,11 @@ Public Class Form1
         End Get
     End Property
 
-    Async Sub setStoryListTitle()
+    Sub setStoryListTitle()
         txt_StoryLsTitle = "選擇視覺小說"
         StoryListTitle.Text = ""
 
-        Await Task.Run(
+        Task.Run(
             Sub()
 
                 For x = 0 To txt_StoryLsTitle.Length - 1
@@ -953,17 +957,16 @@ Public Class Form1
                 Next
                 Exit Sub
             End If
+            scriptLs.Add(cmd)
         Next
 
-        loadScript(script, storyLs(storyTableCurrentIndex) + "\" + sender.Text)
+        loadScript(storyLs(storyTableCurrentIndex) + "\" + sender.Text)
     End Sub
 
-    Private Async Sub loadScript(script As String(), chapterPath As String)
+    Private Async Sub loadScript(chapterPath As String)
         Await Task.Run(
             Sub()
-                Dim scriptLs = script.ToList()
-
-                For Each cmd As String In script
+                For Each cmd As String In scriptLs
                     Dim key = cmd.Split(" ")(0)
 
                     Select Case key
@@ -998,8 +1001,9 @@ Public Class Form1
                                     Dim y = Me.ClientSize.Height * 0.15
                                     Dim h = Me.ClientSize.Height * 0.85
                                     Dim idx = scriptLs.FindIndex(Function(value As String) value = cmd) + 1
+                                    'MsgBox(cmd)
                                     Dim i = idx
-                                    Dim tmpQ As New Queue(Of Func(Of Object))
+                                    Dim skipCmdCount As Integer = 0
 
                                     Select Case location
                                         Case "left"
@@ -1017,10 +1021,11 @@ Public Class Form1
                                             p1.Location = New Drawing.Point(Me.ClientSize.Width * 0.5 - p1.Width, y)
                                             p1.Show()
 
+                                            tmpQ_left.Clear()
                                             While scriptLs(i).Split(" ")(0) = "character"
                                                 If scriptLs(i).Split(" ")(2) = "left" Then
                                                     skipCmdCount += 1
-                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    tmpQ_left.Enqueue(cmdQueue(skipCmdCount))
                                                     i += 1
                                                 Else
                                                     Exit While
@@ -1043,10 +1048,11 @@ Public Class Form1
                                             p2.Location = New Drawing.Point((Me.ClientSize.Width - p2.Width) * 0.5, y)
                                             p2.Show()
 
+                                            tmpQ_center.Clear()
                                             While scriptLs(i).Split(" ")(0) = "character"
                                                 If scriptLs(i).Split(" ")(2) = "center" Then
                                                     skipCmdCount += 1
-                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    tmpQ_center.Enqueue(cmdQueue(skipCmdCount))
                                                     i += 1
                                                 Else
                                                     Exit While
@@ -1067,10 +1073,11 @@ Public Class Form1
                                             p3.Location = New Drawing.Point(Me.ClientSize.Width * 0.5, y)
                                             p3.Show()
 
+                                            tmpQ_right.Clear()
                                             While scriptLs(i).Split(" ")(0) = "character"
                                                 If scriptLs(i).Split(" ")(2) = "right" Then
                                                     skipCmdCount += 1
-                                                    tmpQ.Enqueue(cmdQueue(skipCmdCount))
+                                                    tmpQ_right.Enqueue(cmdQueue(skipCmdCount))
                                                     i += 1
                                                 Else
                                                     Exit While
@@ -1080,14 +1087,30 @@ Public Class Form1
 
                                     Task.Run(
                                         Sub()
-                                            While tmpQ.Count
+                                            While tmpQ_left.Count
                                                 Thread.Sleep(2500)
-                                                tmpQ(0)()
-                                                tmpQ.Dequeue()
+                                                tmpQ_left(0)()
+                                                tmpQ_left.Dequeue()
                                             End While
+                                            While tmpQ_center.Count
+                                                Thread.Sleep(2500)
+                                                tmpQ_center(0)()
+                                                tmpQ_center.Dequeue()
+                                            End While
+                                            While tmpQ_right.Count
+                                                Thread.Sleep(2500)
+                                                tmpQ_right(0)()
+                                                tmpQ_right.Dequeue()
+                                            End While
+
+                                            If stopEffect Then
+                                                stopEffect = False
+                                            End If
+
                                         End Sub)
 
-                                    scriptLs.RemoveAt(idx - 1)
+                                    skip = skipCmdCount
+                                    scriptLs.Remove(cmd)
                                     Return 2
                                 End Function)
                         Case "title_fullscreen"
@@ -1168,6 +1191,9 @@ Public Class Form1
                                                     stopEffect = False
                                                     Exit For
                                                 Else
+                                                    Do Until Not isFading
+                                                        Thread.Sleep(100)
+                                                    Loop
                                                     txt.Text += t(i)
                                                     Thread.Sleep(50)
                                                 End If
@@ -1248,7 +1274,7 @@ Public Class Form1
                                     Task.Run(
                                         Sub()
                                             Do Until Not isFading
-                                                Thread.Sleep(50)
+                                                Thread.Sleep(100)
                                             Loop
                                             mpls(2).Play()
                                         End Sub)
@@ -1291,6 +1317,7 @@ Public Class Form1
                                                 If stopEffect Then
                                                     isFading = False
                                                     stopEffect = False
+                                                    Me.Enabled = True
                                                     Exit Sub
                                                 End If
                                             End While
@@ -1304,6 +1331,7 @@ Public Class Form1
                                                 If stopEffect Then
                                                     isFading = False
                                                     stopEffect = False
+                                                    Me.Enabled = True
                                                     Exit Sub
                                                 End If
                                             End While
@@ -1333,6 +1361,7 @@ Public Class Form1
                                                 If stopEffect Then
                                                     isFading = False
                                                     stopEffect = False
+                                                    Me.Enabled = True
                                                     Exit Sub
                                                 End If
                                             End While
@@ -1346,6 +1375,7 @@ Public Class Form1
                                                 If stopEffect Then
                                                     isFading = False
                                                     stopEffect = False
+                                                    Me.Enabled = True
                                                     Exit Sub
                                                 End If
                                             End While
@@ -1450,7 +1480,9 @@ Public Class Form1
                                             Next
 
                                             storyTableList(storyTableCurrentIndex).Show()
+                                            setStoryListTitle()
                                             StoryListTitle.Show()
+
                                             If storyTableList.Count > 1 Then
                                                 btnSwitchStoryL.Show()
                                                 btnSwitchStoryR.Show()
@@ -1463,10 +1495,14 @@ Public Class Form1
                                             Next
 
                                             Me.Text = "選擇視覺小說 - Visual Novel Engine"
-                                            setStoryListTitle()
                                             Me.AllowDrop = True
-                                            stopEffect = False
                                         End Sub)
+
+                                    scriptLs.Clear()
+                                    deQCount = 0
+
+                                    stopEffect = False
+                                    isDisplayingStory = False
                                     Return 0
                                 End Function)
                     End Select
@@ -1542,10 +1578,10 @@ Public Class Form1
                         Case 2
                             cmdQueue.Dequeue()
                             deQCount += 1
-                            While skipCmdCount
+                            While skip
                                 cmdQueue.Dequeue()
-                                skipCmdCount -= 1
                                 deQCount += 1
+                                skip -= 1
                             End While
                             'MsgBox(deQCount)
                         Case 3
